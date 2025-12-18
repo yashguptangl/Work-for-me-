@@ -1,0 +1,228 @@
+// packages/prisma/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  firstName       String
+  lastName        String
+  phone           String    @unique
+  role            Role      @default(SEEKER)
+  isVerified      Boolean   @default(false)
+  otp             Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  wishlist        Wishlist[]
+  
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+}
+
+model Owner {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  firstName       String
+  lastName        String
+  phone           String    @unique
+  isVerified      Boolean   @default(false)
+  otp             Int?
+  planType        String?   @default("FREE")
+  validity        DateTime  @default(now())
+  listings        Int?      @default(1)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  properties      Property[]
+  
+  @@index([email])
+  @@index([phone])
+}
+
+enum Role {
+  SEEKER
+  OWNER
+  ADMIN
+}
+
+// Property Model - Corrected
+model Property {
+  id                String       @id @default(uuid())
+  title             String
+  description       String       @db.Text
+  propertyType      PropertyType
+  // Listing type and marketing
+  type              String?      @default("RENT") // e.g., RENT or SALE
+  offer             String?      @default("")
+  
+  // Location
+  address           String
+  city              String
+  townSector        String?
+  colony            String?
+  landmark          String?
+  latitude          Float?
+  longitude         Float?
+  apiAddress        String?
+  
+  // Pricing
+  rent              String
+  security          String       @default("0")
+  maintenance       String       @default("0")
+  negotiable        Boolean      @default(false)
+  
+  // Property Details
+  bhk               Int          @default(1)
+  furnished         String
+  accommodation     String
+  totalFloors       Int          @default(1)
+  totalUnits        Int          @default(1)
+  
+  // Utilities
+  powerBackup       String
+  waterSupply       String
+  parking           String
+  
+  // Amenities
+  insideAmenities   String[]
+  outsideAmenities  String[]
+  
+  // Preferences
+  genderPreference  String
+  preferredTenants  String[]
+  noticePeriod      String
+  
+  // Contact
+  contactName       String
+  whatsappNo        String
+  images            String[]
+  
+  // Metadata
+  isAvailable       Boolean      @default(true)
+  isVerified        Boolean      @default(false)
+  isDraft           Boolean      @default(false)
+  
+  // Stats
+  views             Int          @default(0)
+  contactCount      Int          @default(0)
+  // Expiry (for listing validity)
+  expiry            DateTime?
+  
+  // Owner
+  ownerId           String
+  owner             Owner        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  contacts          Contact[]
+  wishlist          Wishlist[]
+  
+  @@index([city])
+  @@index([propertyType])
+  @@index([ownerId])
+  @@index([isAvailable])
+  @@index([isDraft])
+  @@index([createdAt])
+}
+
+enum PropertyType {
+  ROOM
+  PG
+  FLAT
+  PLOT
+}
+
+// Contact Model - Simplified (No Visits)
+model Contact {
+  id            String        @id @default(uuid())
+  propertyId    String
+  property      Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  userName      String
+  userPhone     String
+  message       String?       @db.Text
+  contactType   ContactType   @default(INQUIRY)
+  status        ContactStatus @default(NEW)
+  
+  ownerDeleted  Boolean       @default(false)
+  userDeleted   Boolean       @default(false)
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  @@index([propertyId])
+  @@index([userPhone])
+  @@index([createdAt])
+}
+
+enum ContactType {
+  INQUIRY
+  CALL_REQUEST
+  WHATSAPP
+}
+
+enum ContactStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+// Wishlist Model
+model Wishlist {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+// OTP Model - For Mobile Verification
+model TempMobileVerifyOwnerListing {
+  id        String   @id @default(uuid())
+  mobile    String
+  otp       Int
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([mobile])
+  @@index([expiresAt])
+}
+
+model TempMobileVerification {
+  id        String   @id @default(uuid())
+  mobile    String   @unique
+  otp       Int
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([mobile])
+  @@index([expiresAt])
+}
+
+model ContactUs {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  message   String   @db.Text
+  phone     String
+  createdAt DateTime @default(now())
+}
