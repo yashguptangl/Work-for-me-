@@ -48,8 +48,8 @@ const About = () => {
     },
     {
       name: 'Saurabh Kr. Jha',
-      role: 'Co-founder & CTO',
-      description: 'Co-founder overseeing operations and partnerships.',
+      role: 'Founding Engineer',
+      description: 'Overseeing operations and growth at Roomlocate.',
       image: heroProperty,
     },
   ];
@@ -136,7 +136,7 @@ const About = () => {
             </motion.div>
             <motion.div className="relative w-full h-[300px] md:h-[360px] [transform-style:preserve-3d]" initial={{ opacity: 0, rotateY: -15, y: 24 }} whileInView={{ opacity: 1, rotateY: 0, y: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }} viewport={{ once: true }} whileHover={{ y: -6, scale: 1.02 }}>
               <Image 
-                src={heroProperty} 
+                src={heroProperty.src} 
                 alt="Our story"
                 fill
                 className="rounded-lg shadow-[var(--shadow-property)] object-cover"
