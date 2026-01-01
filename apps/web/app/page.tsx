@@ -108,7 +108,7 @@ const Index = () => {
             </div>
             <div className="animate-fade-in-delay relative w-full h-[240px] sm:h-[280px] md:h-[320px] lg:h-[360px] order-first md:order-last">
               <Image 
-                src={pgRoom} 
+                src={pgRoom.src} 
                 alt="Quality housing"
                 fill
                 className="rounded-lg shadow-[var(--shadow-property)] object-cover"

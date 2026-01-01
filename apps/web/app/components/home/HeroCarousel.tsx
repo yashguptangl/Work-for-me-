@@ -46,7 +46,7 @@ export default function HeroCarousel() {
             transition={{ duration: 0.6 }}
           >
             <Image
-              src={slides[index]?.image || '/default-property.jpg'}
+              src={slides[index]?.image.src || '/default-property.jpg'}
               alt={slides[index]?.title || 'Property'}
               fill
               className="object-cover"
@@ -60,7 +60,7 @@ export default function HeroCarousel() {
       {/* ✅ Static text overlay (won’t reanimate every 3s) */}
       <div className="absolute inset-0 flex flex-col items-center justify-center px-3 sm:px-4 md:px-6 text-center pointer-events-none">
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-transparent bg-gradient-to-r from-white via-white to-yellow-200 bg-clip-text drop-shadow-[0_6px_24px_rgba(0,0,0,0.35)] leading-tight">
-          Find Perfect Room for Rent
+          Find Perfect Room for You
         </h1>
         <p className="mt-2 sm:mt-3 md:mt-4 max-w-sm sm:max-w-md md:max-w-xl text-sm sm:text-base md:text-lg font-medium text-white/85 px-4">
           Verified Rooms, Flats and Pg with trusted owners and move-in support.
