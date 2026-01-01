@@ -4,10 +4,9 @@ import { usePathname } from 'next/navigation'
 import { cn } from '../../lib/utils'
 
 interface Item { href: string; label: string; icon?: React.ReactNode }
-export function Sidebar({ items, title, color }: { items: Item[]; title: string; color: 'admin'|'owner'|'user' }) {
+export function Sidebar({ items, title, color }: { items: Item[]; title: string; color: 'owner'|'user' }) {
   const pathname = usePathname()
   const colorMap = {
-    admin: 'bg-[#1e40af]',
     owner: 'bg-[#0d9488]',
     user: 'bg-[#f3f4f6] text-black'
   }

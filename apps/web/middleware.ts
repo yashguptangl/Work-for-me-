@@ -2,10 +2,25 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Allow all requests - authentication is handled client-side via AuthContext
-  return NextResponse.next()
+  const { pathname } = request.nextUrl;
+
+  // Robots.txt configuration
+  if (pathname === '/robots.txt') {
+    const robotsTxt = `User-agent: *
+Sitemap: ${request.nextUrl.origin}/sitemap.xml`;
+    
+    return new NextResponse(robotsTxt, {
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/owner/:path*', '/user/:path*']
+  matcher: [
+    '/owner/:path*', 
+    '/user/:path*',
+    '/robots.txt'
+  ]
 }

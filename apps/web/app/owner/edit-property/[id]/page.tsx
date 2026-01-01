@@ -17,10 +17,21 @@ import Image from "next/image";
 import ComboBox from "@/components/ui/ComboBox";
 
 const propertyTypes = [
-  { value: "ROOM", label: "Room", icon: DoorClosed },
-  { value: "PG", label: "PG", icon: Building2 },
-  { value: "FLAT", label: "Flat", icon: Home },
+  { value: "ROOM", label: "Room" },
+  { value: "PG", label: "PG" },
+  { value: "FLAT", label: "Flat" },
+  { value: "HOUSE", label: "Independent House" },
+  { value: "VILLA", label: "Villa" },
 ];
+
+const listingTypes = [
+  { value: "RENT", label: "Rent" },
+  { value: "SALE", label: "Buy/Sell" },
+];
+
+const propertyAgeOptions = ["New/Under Construction", "1-5 years", "5-10 years", "10+ years"];
+const facingDirectionOptions = ["North", "South", "East", "West", "North-East", "North-West", "South-East", "South-West"];
+const possessionOptions = ["Ready to move", "Under construction", "Within 1 month", "Within 3 months", "Within 6 months"];
 
 const furnishedOptions = ["Furnished", "Semi-Furnished", "Unfurnished"];
 const genderOptions = ["Any", "Male", "Female", "Family"];
@@ -48,6 +59,7 @@ const EditPropertyPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState<any>({
+    listingType: "RENT",
     insideAmenities: [],
     outsideAmenities: [],
     preferredTenants: [],
@@ -157,13 +169,29 @@ const EditPropertyPage = () => {
       const updateData = {
         ...form,
         imageUrls: existingImages,
-        rent: form.rent.toString(),
-        security: form.security?.toString() || "0",
-        maintenance: form.maintenance?.toString() || "0",
-        bhk: form.bhk.toString(),
+        listingType: form.listingType || "RENT",
+        // Rental fields
+        rent: form.listingType === "RENT" ? form.rent?.toString() : undefined,
+        security: form.listingType === "RENT" && form.security ? form.security.toString() : undefined,
+        maintenance: form.listingType === "RENT" && form.maintenance ? form.maintenance.toString() : undefined,
+        noticePeriod: form.listingType === "RENT" && form.noticePeriod ? form.noticePeriod.toString() : undefined,
+        accommodation: form.listingType === "RENT" ? form.accommodation : undefined,
+        genderPreference: form.listingType === "RENT" ? form.genderPreference : undefined,
+        preferredTenants: form.listingType === "RENT" ? form.preferredTenants : undefined,
+        // Sale fields
+        salePrice: form.listingType === "SALE" ? form.salePrice?.toString() : undefined,
+        carpetArea: form.listingType === "SALE" ? form.carpetArea : undefined,
+        builtUpArea: form.listingType === "SALE" ? form.builtUpArea : undefined,
+        pricePerSqft: form.listingType === "SALE" ? form.pricePerSqft : undefined,
+        propertyAge: form.listingType === "SALE" ? form.propertyAge : undefined,
+        floorNumber: form.listingType === "SALE" && form.floorNumber ? parseInt(form.floorNumber) : undefined,
+        facingDirection: form.listingType === "SALE" ? form.facingDirection : undefined,
+        possession: form.listingType === "SALE" ? form.possession : undefined,
+        furnishingDetails: form.listingType === "SALE" ? form.furnishingDetails : undefined,
+        // Common fields
+        bhk: form.bhk?.toString(),
         totalFloors: form.totalFloors?.toString() || "1",
         totalUnits: form.totalUnits?.toString() || "1",
-        noticePeriod: form.noticePeriod?.toString() || "30",
       };
 
       const response = await apiClient.updateProperty(propertyId, updateData);
@@ -243,27 +271,34 @@ const EditPropertyPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Listing Type */}
+            <div className="space-y-2">
+              <Label htmlFor="listingType">Listing Type *</Label>
+              <Select value={form.listingType} onValueChange={(value) => setForm({ ...form, listingType: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select listing type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {listingTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Property Type */}
             <div className="space-y-2">
-              <Label>Property Type *</Label>
-              <div className="grid grid-cols-3 gap-4">
-                {propertyTypes.map((type) => (
-                  <Card
-                    key={type.value}
-                    className={`cursor-pointer transition-all ${
-                      form.propertyType === type.value
-                        ? "border-primary bg-primary/5"
-                        : "hover:border-primary/50"
-                    }`}
-                    onClick={() => setForm({ ...form, propertyType: type.value })}
-                  >
-                    <CardContent className="flex flex-col items-center justify-center p-6">
-                      <type.icon className="h-8 w-8 mb-2" />
-                      <span className="font-medium">{type.label}</span>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <Label htmlFor="propertyType">Property Type *</Label>
+              <Select value={form.propertyType} onValueChange={(value) => setForm({ ...form, propertyType: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {propertyTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Basic Details */}
@@ -279,17 +314,32 @@ const EditPropertyPage = () => {
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="rent">Monthly Rent (₹) *</Label>
-                <Input
-                  id="rent"
-                  type="number"
-                  value={form.rent || ""}
-                  onChange={(e) => setForm({ ...form, rent: e.target.value })}
-                  required
-                  placeholder="10000"
-                />
-              </div>
+              {/* Pricing Section - Conditional */}
+              {form.listingType === "RENT" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="rent">Monthly Rent (₹) *</Label>
+                  <Input
+                    id="rent"
+                    type="number"
+                    value={form.rent || ""}
+                    onChange={(e) => setForm({ ...form, rent: e.target.value })}
+                    required
+                    placeholder="10000"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="salePrice">Sale Price (₹) *</Label>
+                  <Input
+                    id="salePrice"
+                    type="number"
+                    value={form.salePrice || ""}
+                    onChange={(e) => setForm({ ...form, salePrice: e.target.value })}
+                    required
+                    placeholder="5000000"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Location */}
@@ -403,39 +453,150 @@ const EditPropertyPage = () => {
               </div>
             </div>
 
-            {/* Pricing Details */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="security">Security Deposit (₹)</Label>
-                <Input
-                  id="security"
-                  type="number"
-                  value={form.security || ""}
-                  onChange={(e) => setForm({ ...form, security: e.target.value })}
-                  placeholder="20000"
-                />
-              </div>
+            {/* Pricing Details - Conditional */}
+            {form.listingType === "RENT" ? (
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="security">Security Deposit (₹)</Label>
+                  <Input
+                    id="security"
+                    type="number"
+                    value={form.security || ""}
+                    onChange={(e) => setForm({ ...form, security: e.target.value })}
+                    placeholder="20000"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="maintenance">Maintenance (₹/month)</Label>
-                <Input
-                  id="maintenance"
-                  type="number"
-                  value={form.maintenance || ""}
-                  onChange={(e) => setForm({ ...form, maintenance: e.target.value })}
-                  placeholder="1000"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="maintenance">Maintenance (₹/month)</Label>
+                  <Input
+                    id="maintenance"
+                    type="number"
+                    value={form.maintenance || ""}
+                    onChange={(e) => setForm({ ...form, maintenance: e.target.value })}
+                    placeholder="1000"
+                  />
+                </div>
 
-              <div className="flex items-center space-x-2 pt-8">
-                <Checkbox
-                  id="negotiable"
-                  checked={form.negotiable}
-                  onCheckedChange={(checked) => setForm({ ...form, negotiable: !!checked })}
-                />
-                <Label htmlFor="negotiable">Rent Negotiable</Label>
+                <div className="flex items-center space-x-2 pt-8">
+                  <Checkbox
+                    id="negotiable"
+                    checked={form.negotiable}
+                    onCheckedChange={(checked) => setForm({ ...form, negotiable: !!checked })}
+                  />
+                  <Label htmlFor="negotiable">Rent Negotiable</Label>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="carpetArea">Carpet Area (sq.ft) *</Label>
+                  <Input
+                    id="carpetArea"
+                    type="number"
+                    value={form.carpetArea || ""}
+                    onChange={(e) => setForm({ ...form, carpetArea: e.target.value })}
+                    required
+                    placeholder="1200"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="builtUpArea">Built-up Area (sq.ft)</Label>
+                  <Input
+                    id="builtUpArea"
+                    type="number"
+                    value={form.builtUpArea || ""}
+                    onChange={(e) => setForm({ ...form, builtUpArea: e.target.value })}
+                    placeholder="1500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="pricePerSqft">Price per sq.ft (₹)</Label>
+                  <Input
+                    id="pricePerSqft"
+                    type="number"
+                    value={form.pricePerSqft || ""}
+                    onChange={(e) => setForm({ ...form, pricePerSqft: e.target.value })}
+                    placeholder="4000"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="propertyAge">Property Age *</Label>
+                  <Select value={form.propertyAge} onValueChange={(value) => setForm({ ...form, propertyAge: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select age" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {propertyAgeOptions.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="floorNumber">Floor Number</Label>
+                  <Input
+                    id="floorNumber"
+                    type="number"
+                    value={form.floorNumber || ""}
+                    onChange={(e) => setForm({ ...form, floorNumber: e.target.value })}
+                    placeholder="3"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="facingDirection">Facing Direction *</Label>
+                  <Select value={form.facingDirection} onValueChange={(value) => setForm({ ...form, facingDirection: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select direction" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {facingDirectionOptions.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="possession">Possession *</Label>
+                  <Select value={form.possession} onValueChange={(value) => setForm({ ...form, possession: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select possession" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {possessionOptions.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="furnishingDetails">Furnishing Details</Label>
+                  <Textarea
+                    id="furnishingDetails"
+                    value={form.furnishingDetails || ""}
+                    onChange={(e) => setForm({ ...form, furnishingDetails: e.target.value })}
+                    placeholder="List included furniture and fixtures"
+                    rows={2}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-8">
+                  <Checkbox
+                    id="negotiable"
+                    checked={form.negotiable}
+                    onCheckedChange={(checked) => setForm({ ...form, negotiable: !!checked })}
+                  />
+                  <Label htmlFor="negotiable">Price Negotiable</Label>
+                </div>
+              </div>
+            )}
 
             {/* Amenities */}
             <div className="grid md:grid-cols-3 gap-4">

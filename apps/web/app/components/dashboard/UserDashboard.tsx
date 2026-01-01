@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useUserData } from '@/hooks/useUserData'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Heart, MapPin, MessageSquare, Trash2, Loader2 } from 'lucide-react'
 import Image from 'next/image'
@@ -102,19 +103,6 @@ export default function UserDashboard() {
               </div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-2 md:mt-0">
-              <Button 
-                onClick={() => {
-                  loadWishlist();
-                  loadContacts();
-                }} 
-                variant="outline" 
-                className="w-full sm:w-auto text-[10px] sm:text-xs md:text-sm h-8 sm:h-9" 
-                size="sm"
-                disabled={isLoading}
-              >
-                {isLoading ? <Loader2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : null}
-                Refresh
-              </Button>
               <Button onClick={() => router.push('/properties')} className="w-full sm:w-auto text-[10px] sm:text-xs md:text-sm h-8 sm:h-9" size="sm">
                 Browse homes
               </Button>
@@ -183,14 +171,26 @@ export default function UserDashboard() {
                     <div className="flex flex-1 flex-col gap-1 sm:gap-2 md:gap-3 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-xs sm:text-sm md:text-base text-slate-900 line-clamp-1">{item.property.title}</p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="font-medium text-xs sm:text-sm md:text-base text-slate-900 line-clamp-1">{item.property.title}</p>
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-[9px] sm:text-[10px] h-4 ${
+                                item.property.listingType === 'SALE' 
+                                  ? 'bg-purple-100 text-purple-700 border-purple-300' 
+                                  : 'bg-green-100 text-green-700 border-green-300'
+                              }`}
+                            >
+                              {item.property.listingType === 'SALE' ? 'Buy/Sell' : 'Rent'}
+                            </Badge>
+                          </div>
                           <p className="mt-0.5 sm:mt-1 flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs md:text-sm text-slate-500">
                             <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 flex-shrink-0" />
                             <span className="line-clamp-1">{item.property.location}</span>
                           </p>
                         </div>
                         <span className="rounded-full bg-rose-50 px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs md:text-sm font-medium text-rose-600 w-fit flex-shrink-0">
-                          ₹{item.property.rent.toLocaleString()}
+                          ₹{(item.property.listingType === 'SALE' ? item.property.salePrice : item.property.rent)?.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex gap-1.5 sm:gap-2">
@@ -238,7 +238,21 @@ export default function UserDashboard() {
                 contacts.map(contact => (
                   <div key={contact.id} className="space-y-1.5 sm:space-y-2 md:space-y-3 rounded-xl border border-slate-100 bg-white p-2 sm:p-3 md:p-4 shadow-sm">
                     <div className="flex flex-col gap-0.5 sm:gap-1 md:gap-2">
-                      <p className="text-[10px] sm:text-xs md:text-sm text-slate-500">Owner contacted</p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-[10px] sm:text-xs md:text-sm text-slate-500">Owner contacted</p>
+                        {contact.property && (
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-[9px] sm:text-[10px] h-4 ${
+                              contact.property.listingType === 'SALE' 
+                                ? 'bg-purple-100 text-purple-700 border-purple-300' 
+                                : 'bg-green-100 text-green-700 border-green-300'
+                            }`}
+                          >
+                            {contact.property.listingType === 'SALE' ? 'Buy/Sell' : 'Rent'}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="font-medium text-xs sm:text-sm md:text-base text-slate-900 line-clamp-1">{contact.property?.title ?? 'Listing unavailable'}</p>
                       <p className="flex items-center gap-0.5 sm:gap-1 md:gap-2 text-[10px] sm:text-xs md:text-sm text-slate-500">
                         <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 flex-shrink-0" />

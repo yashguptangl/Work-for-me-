@@ -17,7 +17,7 @@ const Index = () => {
     const hasShownWelcome = sessionStorage.getItem('welcome_shown');
     if (!hasShownWelcome) {
       setTimeout(() => {
-        toast.success('🏠 Welcome to Rooms Dekho!', {
+        toast.success('🏠 Welcome to Roomlocate!', {
           description: 'Find your perfect verified room, PG, or flat'
         });
         sessionStorage.setItem('welcome_shown', 'true');
@@ -28,15 +28,19 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* SEO Meta */}
-      <title>Rooms Dekho - Verified Rooms, PGs & Flats | Local Trust</title>
+      <title>Roomlocate - Verified Rooms, PGs & Flats | Local Trust</title>
       
       {/* Hero Carousel */}
       <HeroCarousel />
       {/* Search Bar below hero */}
       <SearchBar
         defaultTab="Rent"
-        onSearch={({ category, q, city, sector }) => {
+        onSearch={({ tab, category, q, city, sector }) => {
           const params = new URLSearchParams();
+          
+          // Set listing type based on tab
+          const listingType = tab === "Rent" ? "RENT" : "SALE";
+          params.set('listingType', listingType);
           
           // Map category to propertyType
           if (category === 'all') {
@@ -47,6 +51,8 @@ const Index = () => {
             if (category === 'rooms') propertyType = 'ROOM';
             else if (category === 'pgs') propertyType = 'PG';
             else if (category === 'flats') propertyType = 'FLAT';
+            else if (category === 'house') propertyType = 'HOUSE';
+            else if (category === 'villa') propertyType = 'VILLA';
             
             params.set('looking_for', propertyType);
           }
@@ -68,7 +74,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
             <div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-5 md:mb-6">
-                Why Choose <span className="text-gradient">Rooms Dekho</span>?
+                Why Choose <span className="text-gradient">Roomlocate</span>?
               </h2>
               <div className="space-y-4 sm:space-y-5 md:space-y-6">
                 <div className="flex items-start space-x-3 sm:space-x-4">

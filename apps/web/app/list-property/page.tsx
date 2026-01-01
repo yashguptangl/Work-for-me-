@@ -21,6 +21,13 @@ const propertyTypes = [
   { value: "ROOM", label: "Room", icon: DoorClosed },
   { value: "PG", label: "PG", icon: Building2 },
   { value: "FLAT", label: "Flat", icon: Home },
+  { value: "HOUSE", label: "Independent House", icon: Home },
+  { value: "VILLA", label: "Villa", icon: Building2 },
+];
+
+const listingTypes = [
+  { value: "RENT", label: "Rent" },
+  { value: "SALE", label: "Buy/Sell" },
 ];
 
 const furnishedOptions = ["Furnished", "Semi-Furnished", "Unfurnished"];
@@ -29,6 +36,11 @@ const tenantOptions = ["Student", "Working Professional", "Family", "Bachelor"];
 const parkingOptions = ["Available", "Not Available", "Paid"];
 const waterSupplyOptions = ["24x7", "Limited Hours", "Tanker"];
 const powerBackupOptions = ["Yes", "No", "Partial"];
+
+// Buy/Sell specific options
+const propertyAgeOptions = ["New/Under Construction", "1-5 years", "5-10 years", "10+ years"];
+const facingDirectionOptions = ["North", "South", "East", "West", "North-East", "North-West", "South-East", "South-West"];
+const possessionOptions = ["Ready to move", "Under construction", "Within 1 month", "Within 3 months", "Within 6 months"];
 
 const planLimits: Record<string, { listings: number, label: string }> = {
   FREE: { listings: 1, label: "Free" },
@@ -51,6 +63,7 @@ interface PropertyForm {
   title: string;
   description: string;
   propertyType: string;
+  listingType: string; // NEW: "RENT" or "SALE"
   address: string;
   city: string;
   townSector: string;
@@ -59,13 +72,28 @@ interface PropertyForm {
   latitude?: number | null;
   longitude?: number | null;
   apiAddress?: string;
+  // Rental fields
   rent: string;
   security: string;
   maintenance: string;
+  accommodation: string;
+  genderPreference: string;
+  preferredTenants: string[];
+  noticePeriod: string;
+  // Sale fields (NEW)
+  salePrice: string;
+  carpetArea: string;
+  builtUpArea: string;
+  pricePerSqft: string;
+  propertyAge: string;
+  floorNumber: string;
+  facingDirection: string;
+  possession: string;
+  furnishingDetails: string;
+  // Common fields
   negotiable: boolean;
   bhk: string;
   furnished: string;
-  accommodation: string;
   totalFloors: string;
   totalUnits: string;
   powerBackup: string;
@@ -73,9 +101,6 @@ interface PropertyForm {
   parking: string;
   insideAmenities: string[];
   outsideAmenities: string[];
-  genderPreference: string;
-  preferredTenants: string[];
-  noticePeriod: string;
   contactName: string;
   whatsappNo: string;
 }
@@ -110,6 +135,7 @@ const ListPropertyPageContent = () => {
     title: "",
     description: "",
     propertyType: "",
+    listingType: "RENT", // Default to RENT
     address: "",
     city: "",
     townSector: "",
@@ -118,13 +144,28 @@ const ListPropertyPageContent = () => {
     latitude: null,
     longitude: null,
     apiAddress: "",
+    // Rental fields
     rent: "",
     security: "",
     maintenance: "",
+    accommodation: "",
+    genderPreference: "",
+    preferredTenants: [],
+    noticePeriod: "",
+    // Sale fields
+    salePrice: "",
+    carpetArea: "",
+    builtUpArea: "",
+    pricePerSqft: "",
+    propertyAge: "",
+    floorNumber: "",
+    facingDirection: "",
+    possession: "",
+    furnishingDetails: "",
+    // Common fields
     negotiable: false,
     bhk: "",
     furnished: "",
-    accommodation: "",
     totalFloors: "",
     totalUnits: "",
     powerBackup: "",
@@ -132,9 +173,6 @@ const ListPropertyPageContent = () => {
     parking: "",
     insideAmenities: [],
     outsideAmenities: [],
-    genderPreference: "",
-    preferredTenants: [],
-    noticePeriod: "",
     contactName: "",
     whatsappNo: "",
   });
@@ -189,15 +227,16 @@ const ListPropertyPageContent = () => {
   };
 
   const validateForm = (): boolean => {
-    const required = [
+    // Common required fields
+    const commonRequired = [
       'title', 'description', 'propertyType', 'address', 'city', 
-      'townSector', 'colony', 'rent', 'security', 'maintenance',
-      'bhk', 'furnished', 'accommodation', 'totalFloors', 'totalUnits',
-      'powerBackup', 'waterSupply', 'parking', 'genderPreference',
-      'noticePeriod', 'contactName', 'whatsappNo'
+      'townSector', 'colony', 'bhk', 'furnished', 
+      'totalFloors', 'totalUnits', 'powerBackup', 'waterSupply', 
+      'parking', 'contactName', 'whatsappNo'
     ];
 
-    for (const field of required) {
+    // Check common fields
+    for (const field of commonRequired) {
       if (!form[field as keyof PropertyForm] || form[field as keyof PropertyForm] === '') {
         toast.error("Missing Information", {
           description: `Please fill ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`,
@@ -206,11 +245,36 @@ const ListPropertyPageContent = () => {
       }
     }
 
-    if (form.preferredTenants.length === 0) {
-      toast.error("Missing Information", {
-        description: "Please select at least one preferred tenant type",
-      });
-      return false;
+    // Validate based on listing type
+    if (form.listingType === 'RENT') {
+      const rentalRequired = ['rent', 'security', 'maintenance', 'accommodation', 'genderPreference', 'noticePeriod'];
+      
+      for (const field of rentalRequired) {
+        if (!form[field as keyof PropertyForm] || form[field as keyof PropertyForm] === '') {
+          toast.error("Missing Information", {
+            description: `Please fill ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`,
+          });
+          return false;
+        }
+      }
+
+      if (form.preferredTenants.length === 0) {
+        toast.error("Missing Information", {
+          description: "Please select at least one preferred tenant type",
+        });
+        return false;
+      }
+    } else if (form.listingType === 'SALE') {
+      const saleRequired = ['salePrice', 'carpetArea', 'builtUpArea', 'facingDirection', 'propertyAge', 'possession'];
+      
+      for (const field of saleRequired) {
+        if (!form[field as keyof PropertyForm] || form[field as keyof PropertyForm] === '') {
+          toast.error("Missing Information", {
+            description: `Please fill ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`,
+          });
+          return false;
+        }
+      }
     }
 
     return true;
@@ -640,10 +704,26 @@ const ListPropertyPageContent = () => {
                     </div>
 
                     <div>
+                      <Label htmlFor="listingType">Listing Type *</Label>
+                      <Select value={form.listingType} onValueChange={(value) => setForm({...form, listingType: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select listing type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-black border border-gray-200 shadow-lg z-[100]">
+                          {listingTypes.map(type => (
+                            <SelectItem key={type.value} value={type.value} className="bg-white text-black hover:bg-gray-100">
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
                       <Label htmlFor="propertyType">Property Type *</Label>
                       <Select value={form.propertyType} onValueChange={(value) => setForm({...form, propertyType: value})}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select property type" />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-black border border-gray-200 shadow-lg z-[100]">
                           {propertyTypes.map(type => (
@@ -744,40 +824,146 @@ const ListPropertyPageContent = () => {
                       Pricing
                     </h3>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="rent">Monthly Rent *</Label>
-                        <Input
-                          id="rent"
-                          type="number"
-                          placeholder="10000"
-                          value={form.rent}
-                          onChange={(e) => setForm({...form, rent: e.target.value})}
-                        />
-                      </div>
+                    {form.listingType === 'RENT' ? (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="rent">Monthly Rent *</Label>
+                            <Input
+                              id="rent"
+                              type="number"
+                              placeholder="10000"
+                              value={form.rent}
+                              onChange={(e) => setForm({...form, rent: e.target.value})}
+                            />
+                          </div>
 
-                      <div>
-                        <Label htmlFor="security">Security Deposit *</Label>
-                        <Input
-                          id="security"
-                          type="number"
-                          placeholder="20000"
-                          value={form.security}
-                          onChange={(e) => setForm({...form, security: e.target.value})}
-                        />
-                      </div>
+                          <div>
+                            <Label htmlFor="security">Security Deposit *</Label>
+                            <Input
+                              id="security"
+                              type="number"
+                              placeholder="20000"
+                              value={form.security}
+                              onChange={(e) => setForm({...form, security: e.target.value})}
+                            />
+                          </div>
 
-                      <div>
-                        <Label htmlFor="maintenance">Maintenance *</Label>
-                        <Input
-                          id="maintenance"
-                          type="number"
-                          placeholder="1000"
-                          value={form.maintenance}
-                          onChange={(e) => setForm({...form, maintenance: e.target.value})}
-                        />
-                      </div>
-                    </div>
+                          <div>
+                            <Label htmlFor="maintenance">Maintenance *</Label>
+                            <Input
+                              id="maintenance"
+                              type="number"
+                              placeholder="1000"
+                              value={form.maintenance}
+                              onChange={(e) => setForm({...form, maintenance: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="salePrice">Sale Price *</Label>
+                            <Input
+                              id="salePrice"
+                              type="number"
+                              placeholder="5000000"
+                              value={form.salePrice}
+                              onChange={(e) => setForm({...form, salePrice: e.target.value})}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="carpetArea">Carpet Area (sq.ft) *</Label>
+                            <Input
+                              id="carpetArea"
+                              type="number"
+                              placeholder="1200"
+                              value={form.carpetArea}
+                              onChange={(e) => setForm({...form, carpetArea: e.target.value})}
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="builtUpArea">Built-up Area (sq.ft) *</Label>
+                            <Input
+                              id="builtUpArea"
+                              type="number"
+                              placeholder="1500"
+                              value={form.builtUpArea}
+                              onChange={(e) => setForm({...form, builtUpArea: e.target.value})}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="floorNumber">Floor Number</Label>
+                            <Input
+                              id="floorNumber"
+                              type="number"
+                              placeholder="3"
+                              value={form.floorNumber}
+                              onChange={(e) => setForm({...form, floorNumber: e.target.value})}
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="facingDirection">Facing Direction *</Label>
+                            <Select value={form.facingDirection} onValueChange={(value) => setForm({...form, facingDirection: value})}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select direction" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white text-black border border-gray-200 shadow-lg z-[100]">
+                                {facingDirectionOptions.map(option => (
+                                  <SelectItem key={option} value={option} className="bg-white text-black hover:bg-gray-100">
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="propertyAge">Property Age *</Label>
+                            <Select value={form.propertyAge} onValueChange={(value) => setForm({...form, propertyAge: value})}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select age" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white text-black border border-gray-200 shadow-lg z-[100]">
+                                {propertyAgeOptions.map(option => (
+                                  <SelectItem key={option} value={option} className="bg-white text-black hover:bg-gray-100">
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="possession">Possession *</Label>
+                            <Select value={form.possession} onValueChange={(value) => setForm({...form, possession: value})}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select possession" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white text-black border border-gray-200 shadow-lg z-[100]">
+                                {possessionOptions.map(option => (
+                                  <SelectItem key={option} value={option} className="bg-white text-black hover:bg-gray-100">
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </>
+                    )}
 
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -786,7 +972,7 @@ const ListPropertyPageContent = () => {
                         onCheckedChange={(checked) => setForm({...form, negotiable: checked as boolean})}
                       />
                       <Label htmlFor="negotiable" className="cursor-pointer">
-                        Rent is negotiable
+                        Price is negotiable
                       </Label>
                     </div>
                   </div>
@@ -827,15 +1013,17 @@ const ListPropertyPageContent = () => {
                         </Select>
                       </div>
 
-                      <div>
-                        <Label htmlFor="accommodation">Accommodation *</Label>
-                        <Input
-                          id="accommodation"
-                          placeholder="e.g., 2-3 persons"
-                          value={form.accommodation}
-                          onChange={(e) => setForm({...form, accommodation: e.target.value})}
-                        />
-                      </div>
+                      {form.listingType === 'RENT' && (
+                        <div>
+                          <Label htmlFor="accommodation">Accommodation *</Label>
+                          <Input
+                            id="accommodation"
+                            placeholder="e.g., 2-3 persons"
+                            value={form.accommodation}
+                            onChange={(e) => setForm({...form, accommodation: e.target.value})}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -951,55 +1139,57 @@ const ListPropertyPageContent = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Tenant Preferences</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="genderPreference">Gender Preference *</Label>
-                        <Select value={form.genderPreference} onValueChange={(value) => setForm({...form, genderPreference: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {genderOptions.map(option => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                  {form.listingType === 'RENT' && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Tenant Preferences</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="genderPreference">Gender Preference *</Label>
+                          <Select value={form.genderPreference} onValueChange={(value) => setForm({...form, genderPreference: value})}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {genderOptions.map(option => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="noticePeriod">Notice Period *</Label>
+                          <Input
+                            id="noticePeriod"
+                            placeholder="e.g., 1 month"
+                            value={form.noticePeriod}
+                            onChange={(e) => setForm({...form, noticePeriod: e.target.value})}
+                          />
+                        </div>
                       </div>
 
                       <div>
-                        <Label htmlFor="noticePeriod">Notice Period *</Label>
-                        <Input
-                          id="noticePeriod"
-                          placeholder="e.g., 1 month"
-                          value={form.noticePeriod}
-                          onChange={(e) => setForm({...form, noticePeriod: e.target.value})}
-                        />
+                        <Label>Preferred Tenants *</Label>
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          {tenantOptions.map(tenant => (
+                            <div key={tenant} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`tenant-${tenant}`}
+                                checked={form.preferredTenants.includes(tenant)}
+                                onCheckedChange={() => toggleTenant(tenant)}
+                              />
+                              <Label htmlFor={`tenant-${tenant}`} className="cursor-pointer">
+                                {tenant}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-
-                    <div>
-                      <Label>Preferred Tenants *</Label>
-                      <div className="grid grid-cols-2 gap-3 mt-2">
-                        {tenantOptions.map(tenant => (
-                          <div key={tenant} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`tenant-${tenant}`}
-                              checked={form.preferredTenants.includes(tenant)}
-                              onCheckedChange={() => toggleTenant(tenant)}
-                            />
-                            <Label htmlFor={`tenant-${tenant}`} className="cursor-pointer">
-                              {tenant}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2">

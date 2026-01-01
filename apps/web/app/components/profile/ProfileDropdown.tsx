@@ -39,8 +39,8 @@ export default function ProfileDropdown({ user, onClose, onLogout }: Props) {
   }, [onClose]);
 
   const displayName = user.name || user.email.split("@")[0] || "User";
-  const roleLabel = user.role === "ADMIN" ? "Admin" : user.role === "OWNER" ? "Owner" : "Master User";
-  const dashboardHref = user.role === 'ADMIN' ? '/admin/dashboard' : user.role === 'OWNER' ? '/owner/dashboard' : '/user/dashboard';
+  const roleLabel = user.role === "OWNER" ? "Owner" : "Master User";
+  const dashboardHref = user.role === 'OWNER' ? '/owner/dashboard' : '/user/dashboard';
   const dashboardLabel = 'Dashboard';
   const profileHref = '/profile';
   const roleItems = user.role === 'OWNER'

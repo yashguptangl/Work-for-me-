@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search as SearchIcon, Navigation } from "lucide-react";
+import { Search as SearchIcon, Navigation, Building2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,9 @@ import ComboBox from "@/components/ui/ComboBox";
 import { citiesData } from "@/lib/cities";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
-const TABS = ["Rent"] as const;
+const TABS = ["Rent", "Buy/Sell"] as const;
 
 export type SearchBarProps = {
   defaultTab?: typeof TABS[number];
@@ -20,11 +21,20 @@ export type SearchBarProps = {
 
 export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [active, setActive] = useState<typeof TABS[number]>(defaultTab);
   const [category, setCategory] = useState("all");
   const [q] = useState("");
   const [city, setCity] = useState("");
   const [sector, setSector] = useState("");
+
+  const handleAddListing = () => {
+    if (user?.role === 'OWNER') {
+      router.push('/owner/dashboard');
+    } else {
+      router.push('/signup?type=owner');
+    }
+  };
 
   const handleSearch = () => {
     if (!city || !sector) {
@@ -34,9 +44,11 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
       return;
     }
     
+    const listingType = active === "Rent" ? "RENT" : "SALE";
+    
     if (q.trim() === '' && category === 'all') {
       toast.info('🔍 Broad Search', {
-        description: 'Searching all residential properties in your selected area'
+        description: `Searching all ${listingType === 'RENT' ? 'rental' : 'sale'} properties in your selected area`
       });
     }
     
@@ -44,39 +56,31 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
   };
 
   const handleNearMeClick = async () => {
-    console.log('🔍 Near Me button clicked - searching all properties');
-
     if (!navigator.geolocation) {
-      console.error('❌ Geolocation not supported');
       toast.error("Your browser doesn't support geolocation");
       return;
     }
 
     const toastId = toast.loading('Getting your location...');
-    console.log('📍 Requesting geolocation permission...');
+    
+    const listingType = active === "Rent" ? "RENT" : "SALE";
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log('✅ Geolocation success:', {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        });
-        
         toast.success('Location found! Searching nearby properties...', { id: toastId });
 
-        // Navigate to properties page with Near Me params (all properties)
         const params = new URLSearchParams({
           nearMe: 'true',
           latitude: position.coords.latitude.toString(),
           longitude: position.coords.longitude.toString(),
+          listingType: listingType,
           allResidential: 'true'
         });
 
-        console.log('🚀 Navigating to /properties with params:', params.toString());
         router.push(`/properties?${params.toString()}`);
       },
       (error) => {
-        console.error('❌ Geolocation error:', error);
+        console.error('Geolocation error:', error);
         toast.error('Failed to get your location. Please enable location services.', { id: toastId });
       }
     );
@@ -85,12 +89,34 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
   const cityOptions = Object.keys(citiesData);
   const sectorOptions = city ? (citiesData[city] ?? []) : [];
 
+  // Property categories based on listing type
+  const getPropertyCategories = () => {
+    if (active === "Rent") {
+      return [
+        { value: "all", label: "All Residential" },
+        { value: "flats", label: "Flats" },
+        { value: "rooms", label: "Rooms" },
+        { value: "pgs", label: "PGs" },
+        { value: "villa", label: "Villa" },
+        { value: "house", label: "House" },
+      ];
+    } else {
+      return [
+        { value: "all", label: "All Residential" },
+        { value: "flats", label: "Flats" },
+        { value: "house", label: "House" },
+        { value: "villa", label: "Villa" },
+        { value: "rooms", label: "Rooms" },
+      ];
+    }
+  };
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative z-20 -mt-4 sm:-mt-6 md:-mt-8 lg:-mt-10"
+      className="relative z-20 -mt-8 sm:-mt-10 md:-mt-12 lg:-mt-16"
     >
       <div className="mx-auto max-w-5xl px-3 sm:px-4 md:px-6">
         <div className="rounded-xl sm:rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
@@ -98,7 +124,7 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
           <div className="px-3 sm:px-4 pt-2 sm:pt-3">
             <Tabs value={active} onValueChange={(v) => setActive(v as typeof active)}>
               <div className="overflow-x-auto -mx-2 px-2">
-                <TabsList className="h-9 sm:h-11 bg-transparent flex sm:grid sm:grid-cols-6 gap-1 whitespace-nowrap">
+                <TabsList className="h-9 sm:h-11 bg-transparent inline-flex gap-1 whitespace-nowrap">
                   {TABS.map((t) => (
                     <TabsTrigger
                       key={t}
@@ -123,10 +149,11 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
                     <SelectValue placeholder="All Residential" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Residential</SelectItem>
-                    <SelectItem value="rooms">Rooms</SelectItem>
-                    <SelectItem value="pgs">PGs</SelectItem>
-                    <SelectItem value="flats">Flats</SelectItem>
+                    {getPropertyCategories().map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -150,8 +177,8 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
               </motion.div>
             </div>
 
-            {/* Near Me Button */}
-            <div className="flex justify-end">
+            {/* Near Me and Add Listing Free Buttons */}
+            <div className="flex justify-between items-center gap-2">
               <Button
                 onClick={handleNearMeClick}
                 variant="outline"
@@ -160,6 +187,15 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
               >
                 <Navigation className="h-3 w-3 sm:h-4 sm:w-4" />
                 Near Me
+              </Button>
+              
+              <Button
+                onClick={handleAddListing}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1 rounded-lg sm:rounded-xl text-blue-600 border-blue-600 bg-white hover:bg-blue-50 text-xs sm:text-sm h-8 sm:h-9"
+              >
+                Add Listing Free
               </Button>
             </div>
           </div>

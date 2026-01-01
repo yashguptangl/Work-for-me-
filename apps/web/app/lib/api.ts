@@ -34,11 +34,34 @@ export interface Property {
   title: string;
   description: string;
   propertyType: string;
+  listingType: 'RENT' | 'SALE'; // NEW
   address: string;
   city: string;
   townSector?: string;
-  rent: string;
+  
+  // Rental fields
+  rent?: string;
   rentValue?: number;
+  security?: string;
+  maintenance?: string;
+  accommodation?: string;
+  genderPreference?: string;
+  preferredTenants?: string[];
+  noticePeriod?: string;
+  
+  // Sale fields (NEW)
+  salePrice?: string;
+  saleValue?: number;
+  carpetArea?: string;
+  builtUpArea?: string;
+  pricePerSqft?: string;
+  propertyAge?: string;
+  floorNumber?: number;
+  facingDirection?: string;
+  possession?: string;
+  furnishingDetails?: string;
+  
+  // Common fields
   negotiable: boolean;
   bhk: number;
   furnished: string;
@@ -53,16 +76,10 @@ export interface Property {
   imageUrls?: string[];
   insideAmenities?: string[];
   outsideAmenities?: string[];
-  genderPreference?: string;
   landmark?: string;
   colony?: string;
   contactName?: string;
   whatsappNo?: string;
-  noticePeriod?: string;
-  preferredTenants?: string[];
-  accommodation?: string;
-  security?: string;
-  maintenance?: string;
   powerBackup?: boolean;
   waterSupply?: string;
   parking?: string;
@@ -82,11 +99,14 @@ export type PropertySearchParams = {
   city?: string;
   townSector?: string;
   propertyType?: string;
+  listingType?: 'RENT' | 'SALE'; // NEW
   genderPreference?: string;
   furnished?: string;
   parking?: string;
   minRent?: number;
   maxRent?: number;
+  minPrice?: number; // NEW for sale properties
+  maxPrice?: number; // NEW for sale properties
   insideAmenities?: string[];
   outsideAmenities?: string[];
 };
@@ -379,18 +399,20 @@ class ApiClient {
     return this.request(endpoint);
   }
 
-  async getAllProperties(params?: { looking_for?: string; city?: string; townSector?: string }): Promise<ApiResponse<Property[]>> {
+  async getAllProperties(params?: { looking_for?: string; city?: string; townSector?: string; listingType?: 'RENT' | 'SALE' }): Promise<ApiResponse<Property[]>> {
     // Provide default parameters if not specified
     const defaultParams = {
       looking_for: params?.looking_for || 'PG',
       city: params?.city || 'Delhi',
-      townSector: params?.townSector || 'All'
+      townSector: params?.townSector || 'All',
+      listingType: params?.listingType || 'RENT' // NEW
     };
     
     const searchParams = new URLSearchParams();
     searchParams.append('looking_for', defaultParams.looking_for);
     searchParams.append('city', defaultParams.city);
     searchParams.append('townSector', defaultParams.townSector);
+    searchParams.append('listingType', defaultParams.listingType); // NEW
     
     return this.request(`/search/property?${searchParams.toString()}`);
   }
@@ -403,6 +425,7 @@ class ApiClient {
     latitude: number;
     longitude: number;
     propertyType?: string;
+    listingType?: 'RENT' | 'SALE';
     radius?: number;
   }): Promise<ApiResponse<Property[]>> {
     const searchParams = new URLSearchParams();
@@ -411,6 +434,10 @@ class ApiClient {
     
     if (params.propertyType) {
       searchParams.append('propertyType', params.propertyType);
+    }
+    
+    if (params.listingType) {
+      searchParams.append('listingType', params.listingType);
     }
     
     if (params.radius) {

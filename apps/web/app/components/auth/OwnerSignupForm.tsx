@@ -59,7 +59,7 @@ const OwnerSignupForm = () => {
           <div className="bg-success-light border border-success/20 rounded-lg p-3 mb-4">
             <div className="flex items-center space-x-2">
               <Shield className="w-4 h-4 text-success" />
-              <p className="text-sm font-medium text-success">Your identity helps build trust on Rooms Dekho</p>
+              <p className="text-sm font-medium text-success">Your identity helps build trust on Roomlocate</p>
             </div>
           </div>
 
@@ -164,7 +164,7 @@ const OwnerSignupForm = () => {
         {/* Sign In Link */}
         <div className="text-center text-sm">
           <span className="text-muted-foreground">Already have an account? </span>
-          <Link href="/login" className="text-primary hover:underline font-medium">
+          <Link href="/login?type=owner" className="text-primary hover:underline font-medium">
             Sign in
           </Link>
         </div>

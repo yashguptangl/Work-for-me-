@@ -4,7 +4,8 @@ import { getObjectURL } from "../utils/s3client";
 import getDistance from "../utils/geoUtils";
 
 // Define the allowed values for looking_for
-type LookingFor = "PG" | "FLAT" | "ROOM";
+type LookingFor = "PG" | "FLAT" | "ROOM" | "HOUSE" | "VILLA";
+type ListingType = "RENT" | "SALE";
 
 
 // Helper to get image URLs for a listing
@@ -19,9 +20,18 @@ const getListingImageUrls = async (listingId: string, categories: string[]) => {
 
 export const searchListings = async (req: Request, res: Response) => {
     const looking_for = req.query.looking_for as LookingFor | undefined;
+    const listingType = req.query.listingType as ListingType | undefined; // NEW
     const city = req.query.city as string;
     const townSector = req.query.townSector as string;
     const allResidential = req.query.allResidential as string;
+
+    // Validate listing type
+    if (listingType && !['RENT', 'SALE'].includes(listingType)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid listing type. Must be RENT or SALE"
+        });
+    }
 
     // city and townSector are REQUIRED, but looking_for is optional if allResidential is true
     if (!city || !townSector) {
@@ -48,6 +58,11 @@ export const searchListings = async (req: Request, res: Response) => {
             isDraft: false,
         };
 
+        // Add listing type filter
+        if (listingType) {
+            whereClause.listingType = listingType;
+        }
+
         // Only add propertyType filter if not searching all residential
         if (!allResidential && looking_for) {
             whereClause.propertyType = looking_for;
@@ -64,11 +79,13 @@ export const searchListings = async (req: Request, res: Response) => {
         const listingsWithImages = await Promise.all(
             listings.map(async (listing) => {
                 const imageUrls = await getListingImageUrls(listing.id, imageCategories);
-                const rentValue = parseFloat(listing.rent || "0");
+                const rentValue = listing.listingType === 'RENT' ? parseFloat(listing.rent || "0") : 0;
+                const saleValue = listing.listingType === 'SALE' ? parseFloat(listing.salePrice || "0") : 0;
                 
                 return {
                     ...listing,
                     rentValue,
+                    saleValue,
                     coverImage: imageUrls[0] || null,
                     imageUrls,
                 };
@@ -114,7 +131,8 @@ export const getPropertyById = async (req: Request, res: Response) => {
         // Get image URLs
         const categories = ["first", "second", "third", "fourth", "fifth"];
         const imageUrls = await getListingImageUrls(propertyId, categories);
-        const rentValue = parseFloat(property.rent || "0");
+        const rentValue = property.listingType === 'RENT' ? parseFloat(property.rent || "0") : 0;
+        const saleValue = property.listingType === 'SALE' ? parseFloat(property.salePrice || "0") : 0;
 
         return res.json({ 
             success: true, 
@@ -122,6 +140,7 @@ export const getPropertyById = async (req: Request, res: Response) => {
             data: { 
                 ...property, 
                 rentValue,
+                saleValue,
                 coverImage: imageUrls[0] || null,
                 imageUrls 
             } 
@@ -139,6 +158,7 @@ export const filterProperties = async (req: Request, res: Response) => {
     try {
         const {
             propertyType,
+            listingType,
             budget,
             city,
             townSector,
@@ -149,30 +169,60 @@ export const filterProperties = async (req: Request, res: Response) => {
             allResidential,
         } = req.query;
 
+        // Validate listing type
+        if (listingType && !['RENT', 'SALE'].includes(listingType as string)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid listing type. Must be RENT or SALE"
+            });
+        }
+
         const where: any = {
             isAvailable: true,
             isDraft: false,
         };
 
+        // Add listing type filter
+        if (listingType) where.listingType = listingType;
+        
         // Only add propertyType filter if not searching all residential
         if (!allResidential && propertyType) where.propertyType = propertyType;
         if (city) where.city = city;
         if (townSector) where.townSector = townSector;
-        if (genderPreference) where.genderPreference = genderPreference;
-        if (preferredTenants) {
+        
+        // Gender preference only applies to rental properties
+        if (genderPreference && (!listingType || listingType === 'RENT')) {
+            where.genderPreference = genderPreference;
+        }
+        
+        if (preferredTenants && (!listingType || listingType === 'RENT')) {
             const tenants = (preferredTenants as string).split(",");
             where.preferredTenants = { hasSome: tenants };
         }
 
         if (budget) {
             const [min, max] = (budget as string).split("-").map(Number);
+            const currentListingType = listingType as string || 'RENT';
+            
             if (!isNaN(min as number) && !isNaN(max as number)) {
-                where.AND = [
-                    { minPrice: { gte: String(min) } },
-                    { maxPrice: { lte: String(max) } },
-                ];
+                // Filter based on listing type
+                if (currentListingType === 'SALE') {
+                    where.salePrice = {
+                        gte: String(min),
+                        lte: String(max)
+                    };
+                } else {
+                    where.rent = {
+                        gte: String(min),
+                        lte: String(max)
+                    };
+                }
             } else if (!isNaN(min as number)) {
-                where.maxPrice = { lte: String(min) };
+                if (currentListingType === 'SALE') {
+                    where.salePrice = { lte: String(min) };
+                } else {
+                    where.rent = { lte: String(min) };
+                }
             }
         }
 
@@ -191,16 +241,41 @@ export const filterProperties = async (req: Request, res: Response) => {
             orderBy: { createdAt: "desc" },
         });
 
-        res.json({ listings });
+        // Get images and calculate values
+        const imageCategories = ["first", "second", "third", "fourth", "fifth"];
+        const listingsWithImages = await Promise.all(
+            listings.map(async (listing) => {
+                const imageUrls = await getListingImageUrls(listing.id, imageCategories);
+                const rentValue = listing.listingType === 'RENT' ? parseFloat(listing.rent || "0") : 0;
+                const saleValue = listing.listingType === 'SALE' ? parseFloat(listing.salePrice || "0") : 0;
+                
+                return {
+                    ...listing,
+                    rentValue,
+                    saleValue,
+                    coverImage: imageUrls[0] || null,
+                    imageUrls,
+                };
+            })
+        );
+
+        res.json({ 
+            success: true,
+            message: "Properties filtered successfully",
+            data: listingsWithImages 
+        });
     } catch (error) {
         console.error("Error in /filters:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ 
+            success: false,
+            error: "Internal server error" 
+        });
     }
 };
 
 // Near Me - Search properties within 10km radius
 export const searchNearMe = async (req: Request, res: Response) => {
-    const { latitude, longitude, propertyType, radius = 10 } = req.query;
+    const { latitude, longitude, propertyType, listingType, radius = 10 } = req.query;
 
     // Validate required parameters
     if (!latitude || !longitude) {
@@ -221,6 +296,14 @@ export const searchNearMe = async (req: Request, res: Response) => {
         });
     }
 
+    // Validate listing type
+    if (listingType && !['RENT', 'SALE'].includes(listingType as string)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid listing type. Must be RENT or SALE"
+        });
+    }
+
     try {
         // Build where clause
         const where: any = {
@@ -229,6 +312,10 @@ export const searchNearMe = async (req: Request, res: Response) => {
             latitude: { not: null },
             longitude: { not: null },
         };
+
+        if (listingType) {
+            where.listingType = listingType;
+        }
 
         if (propertyType) {
             where.propertyType = propertyType;
@@ -259,7 +346,8 @@ export const searchNearMe = async (req: Request, res: Response) => {
         const propertiesWithImages = await Promise.all(
             nearbyProperties.map(async (property) => {
                 const imageUrls = await getListingImageUrls(property.id, imageCategories);
-                const rentValue = parseFloat(property.rent || "0");
+                const rentValue = property.listingType === 'RENT' ? parseFloat(property.rent || "0") : 0;
+                const saleValue = property.listingType === 'SALE' ? parseFloat(property.salePrice || "0") : 0;
                 
                 // Calculate distance from user
                 const distance = getDistance(
@@ -272,6 +360,7 @@ export const searchNearMe = async (req: Request, res: Response) => {
                 return {
                     ...property,
                     rentValue,
+                    saleValue,
                     coverImage: imageUrls[0] || null,
                     imageUrls,
                     distance: parseFloat(distance.toFixed(2)), // Distance in km

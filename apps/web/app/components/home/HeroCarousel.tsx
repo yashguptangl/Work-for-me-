@@ -66,20 +66,6 @@ export default function HeroCarousel() {
           Verified Rooms, Flats and Pg with trusted owners and move-in support.
         </p>
       </div>
-
-      {/* Dots */}
-      <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            aria-label={`Go to slide ${i + 1}`}
-            className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
-              i === index ? "bg-white scale-110" : "bg-white/60 hover:bg-white/80"
-            }`}
-          />
-        ))}
-      </div>
     </section>
   );
 }

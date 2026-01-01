@@ -56,6 +56,30 @@ enum Role {
   ADMIN
 }
 
+// Admin Model
+model Admin {
+  id              String       @id @default(uuid())
+  email           String       @unique
+  password        String
+  firstName       String
+  lastName        String
+  phone           String       @unique
+  role            AdminRole    @default(EMPLOYEE)
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  lastLogin       DateTime?
+  
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+enum AdminRole {
+  MAIN_ADMIN
+  EMPLOYEE
+}
+
 // Property Model - Corrected
 model Property {
   id                String       @id @default(uuid())
@@ -63,7 +87,8 @@ model Property {
   description       String       @db.Text
   propertyType      PropertyType
   // Listing type and marketing
-  type              String?      @default("RENT") // e.g., RENT or SALE
+  listingType       String       @default("RENT") // "RENT" or "SALE"
+  type              String?      @default("RENT") // e.g., RENT or SALE (deprecated, use listingType)
   offer             String?      @default("")
   
   // Location
@@ -76,16 +101,31 @@ model Property {
   longitude         Float?
   apiAddress        String?
   
-  // Pricing
-  rent              String
-  security          String       @default("0")
-  maintenance       String       @default("0")
+  // Pricing - Rental
+  rent              String?
+  security          String?      @default("0")
+  maintenance       String?      @default("0")
   negotiable        Boolean      @default(false)
+  
+  // Pricing - Sale (NEW)
+  salePrice         String?
+  pricePerSqft      String?
+  
+  // Property Measurements (NEW)
+  carpetArea        String?
+  builtUpArea       String?
+  floorNumber       Int?
+  
+  // Property Details (NEW for Sale)
+  propertyAge       String?      // New/1-5 years/5-10 years/10+ years
+  facingDirection   String?      // North/South/East/West
+  possession        String?      // Ready to move/Under construction
+  furnishingDetails String?      @db.Text
   
   // Property Details
   bhk               Int          @default(1)
   furnished         String
-  accommodation     String
+  accommodation     String?      // For rental properties
   totalFloors       Int          @default(1)
   totalUnits        Int          @default(1)
   
@@ -98,10 +138,10 @@ model Property {
   insideAmenities   String[]
   outsideAmenities  String[]
   
-  // Preferences
-  genderPreference  String
+  // Preferences (mainly for rental)
+  genderPreference  String?
   preferredTenants  String[]
-  noticePeriod      String
+  noticePeriod      String?
   
   // Contact
   contactName       String
@@ -112,6 +152,11 @@ model Property {
   isAvailable       Boolean      @default(true)
   isVerified        Boolean      @default(false)
   isDraft           Boolean      @default(false)
+  
+  // Verification System
+  verificationStatus    VerificationStatus @default(NOT_VERIFIED)
+  verifiedAt            DateTime?
+  verificationExpiry    DateTime?
   
   // Stats
   views             Int          @default(0)
@@ -126,15 +171,18 @@ model Property {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
-  contacts          Contact[]
-  wishlist          Wishlist[]
+  contacts              Contact[]
+  wishlist              Wishlist[]
+  verificationRequests  VerificationRequest[]
   
   @@index([city])
   @@index([propertyType])
+  @@index([listingType])
   @@index([ownerId])
   @@index([isAvailable])
   @@index([isDraft])
   @@index([createdAt])
+  @@index([verificationStatus])
 }
 
 enum PropertyType {
@@ -142,6 +190,61 @@ enum PropertyType {
   PG
   FLAT
   PLOT
+  HOUSE
+  VILLA
+}
+
+enum VerificationStatus {
+  NOT_VERIFIED
+  PENDING_PAYMENT
+  PENDING_VERIFICATION
+  VERIFIED
+  EXPIRED
+}
+
+enum VerificationRequestStatus {
+  PENDING_PAYMENT
+  PAYMENT_COMPLETED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+// Verification Request Model
+model VerificationRequest {
+  id                String                     @id @default(uuid())
+  propertyId        String
+  property          Property                   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  ownerId           String
+  
+  // Payment Details
+  amount            Int                        @default(149)
+  paymentStatus     String                     @default("PENDING") // PENDING, COMPLETED, FAILED
+  paymentId         String?
+  paymentDate       DateTime?
+  
+  // Request Status
+  status            VerificationRequestStatus  @default(PENDING_PAYMENT)
+  
+  // Admin Review
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  reviewNotes       String?                    @db.Text
+  
+  // Verification Period
+  validFrom         DateTime?
+  validUntil        DateTime?
+  
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  
+  @@index([propertyId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
 }
 
 // Contact Model - Simplified (No Visits)

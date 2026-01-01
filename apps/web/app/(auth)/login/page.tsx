@@ -46,7 +46,7 @@ const LoginContent = () => {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center p-4">
       {/* SEO Meta */}
-      <title>Login - Rooms Dekho | Sign In to Your Account</title>
+      <title>Login - Roomlocate | Sign In to Your Account</title>
 
       <div className="w-full max-w-md">
         {/* Header */}

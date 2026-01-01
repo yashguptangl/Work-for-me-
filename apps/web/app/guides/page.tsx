@@ -22,13 +22,13 @@ const Guides = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* SEO Meta */}
-      <title>User Guides - Rooms Dekho | How to List and Find Properties</title>
+      <title>User Guides - Roomlocate | How to List and Find Properties</title>
 
       {/* Header */}
       <div className="bg-muted/30 py-10">
         <div className="container mx-auto px-4 text-center">
           <Badge className="trust-badge mb-4">Step-by-Step Guides</Badge>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">How Rooms Dekho Works</h1>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">How Roomlocate Works</h1>
           <p className="text-muted-foreground max-w-3xl mx-auto">
             Learn how to find the perfect place or list your property in a few simple steps. Secure, verified and easy.
           </p>

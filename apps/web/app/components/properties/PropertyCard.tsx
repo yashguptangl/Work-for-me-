@@ -33,6 +33,7 @@ interface PropertyCardProps {
     amenities: string[];
     ownerName: string;
     availableFrom: string;
+    listingType?: 'RENT' | 'SALE';
   };
 }
 
@@ -163,6 +164,11 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             {getTypeIcon(property.type)}
             {property.type}
           </Badge>
+          {property.listingType === 'SALE' && (
+            <Badge className="bg-purple-500 text-white">
+              For Sale
+            </Badge>
+          )}
         </div>
 
         <div className="absolute top-3 right-3">
@@ -183,7 +189,9 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
         {/* Price Badge */}
         <div className="absolute bottom-3 right-3 bg-white/90 px-3 py-1 rounded-lg">
           <span className="text-lg font-bold text-primary">₹{property.price.toLocaleString()}</span>
-          <span className="text-sm text-muted-foreground">/month</span>
+          <span className="text-sm text-muted-foreground">
+            {property.listingType === 'SALE' ? '' : '/month'}
+          </span>
         </div>
       </div>
 

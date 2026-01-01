@@ -209,7 +209,7 @@ const MobileVerifyContent = () => {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center p-4">
       {/* SEO Meta */}
-      <title>Mobile Verification - Rooms Dekho | Verify Your Mobile Number</title>
+      <title>Mobile Verification - Roomlocate | Verify Your Mobile Number</title>
 
       <div className="w-full max-w-md">
         {/* Header */}

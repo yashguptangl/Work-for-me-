@@ -70,11 +70,17 @@ const PropertiesContent = () => {
       const allResidential = searchParams.get('allResidential');
       const city = currentFilters.city || searchParams.get('city');
       const townSector = currentFilters.townSector || searchParams.get('townSector') || searchParams.get('area');
+      const listingType = searchParams.get('listingType') as 'RENT' | 'SALE' | null;
 
       const searchParamsObj: any = {
         city: city,
         townSector: townSector
       };
+
+      // Add listing type to search params
+      if (listingType) {
+        searchParamsObj.listingType = listingType;
+      }
 
       // Only add looking_for if not searching all residential
       if (!allResidential && lookingFor && lookingFor !== 'all') {
@@ -97,8 +103,10 @@ const PropertiesContent = () => {
           // Get the cover image from API response
           const coverImage = prop.coverImage || (prop.imageUrls && prop.imageUrls[0]) || heroProperty;
           
-          // Parse price
-          const price = prop.rentValue || parseInt(prop.rent) || 0;
+          // Parse price based on listing type
+          const price = prop.listingType === 'SALE' 
+            ? (prop.saleValue || parseInt(prop.salePrice || '0') || 0)
+            : (prop.rentValue || parseInt(prop.rent || '0') || 0);
 
           // Format location
           const location = [prop.townSector, prop.city].filter(Boolean).join(', ') || prop.address || 'Location unavailable';
@@ -123,6 +131,7 @@ const PropertiesContent = () => {
             amenities,
             ownerName: prop.contactName || 'Owner',
             availableFrom,
+            listingType: prop.listingType || 'RENT',
           };
         });
         setProperties(formattedProperties);
@@ -155,13 +164,14 @@ const PropertiesContent = () => {
     const latitude = searchParams.get('latitude');
     const longitude = searchParams.get('longitude');
     const propertyType = searchParams.get('propertyType');
+    const listingType = searchParams.get('listingType') as 'RENT' | 'SALE' | null;
 
     if (nearMe === 'true' && latitude && longitude) {
       // Trigger Near Me search with coordinates from URL
-      console.log('🌍 Near Me detected from URL params', { latitude, longitude, propertyType });
+      console.log('🌍 Near Me detected from URL params', { latitude, longitude, propertyType, listingType });
       setSelectedNearMeType(propertyType as any || '');
       // Directly call the Near Me search with coordinates
-      loadNearMePropertiesWithCoords(parseFloat(latitude), parseFloat(longitude), propertyType || undefined);
+      loadNearMePropertiesWithCoords(parseFloat(latitude), parseFloat(longitude), propertyType || undefined, listingType || undefined);
     } else {
       // Normal property loading
       loadProperties();
@@ -170,8 +180,8 @@ const PropertiesContent = () => {
   }, [searchParams]);
 
   // Near Me search with provided coordinates
-  const loadNearMePropertiesWithCoords = async (lat: number, lng: number, propertyType?: string) => {
-    console.log('📍 Loading Near Me properties with coordinates:', { lat, lng, propertyType });
+  const loadNearMePropertiesWithCoords = async (lat: number, lng: number, propertyType?: string, listingType?: 'RENT' | 'SALE') => {
+    console.log('📍 Loading Near Me properties with coordinates:', { lat, lng, propertyType, listingType });
     setLoading(true);
     setError(null);
     setNearMeActive(true);
@@ -182,6 +192,7 @@ const PropertiesContent = () => {
         latitude: lat,
         longitude: lng,
         propertyType,
+        listingType,
       });
 
       if (response.success && response.data && response.data.length > 0) {
@@ -196,8 +207,10 @@ const PropertiesContent = () => {
           // Get the cover image from API response
           const coverImage = prop.coverImage || (prop.imageUrls && prop.imageUrls[0]) || heroProperty;
           
-          // Parse price
-          const price = prop.rentValue || parseInt(prop.rent) || 0;
+          // Parse price based on listing type
+          const price = prop.listingType === 'SALE' 
+            ? (prop.saleValue || parseInt(prop.salePrice || '0') || 0)
+            : (prop.rentValue || parseInt(prop.rent || '0') || 0);
 
           // Format location with distance
           const location = [prop.townSector, prop.city].filter(Boolean).join(', ') || prop.address || 'Location unavailable';
@@ -224,6 +237,7 @@ const PropertiesContent = () => {
             ownerName: prop.contactName || 'Owner',
             availableFrom,
             distance: undefined,
+            listingType: prop.listingType || 'RENT',
           };
         });
         
@@ -439,7 +453,7 @@ const PropertiesContent = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* SEO Meta */}
-      <title>Properties - Rooms Dekho | Find PGs, Rooms & Flats</title>
+      <title>Properties - Roomlocate | Find PGs, Rooms & Flats</title>
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">

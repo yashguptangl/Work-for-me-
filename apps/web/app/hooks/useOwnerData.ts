@@ -6,19 +6,23 @@ import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/components/ui/use-toast'
 
 export type PropertyStatus = 'ACTIVE' | 'PAUSED' | 'DELETED'
-export type PropertyType = 'ROOM' | 'PG' | 'FLAT' | 'PLOT' | 'HOURLY_ROOM'
+export type PropertyType = 'ROOM' | 'PG' | 'FLAT' | 'PLOT' | 'HOURLY_ROOM' | 'HOUSE' | 'VILLA'
+export type ListingType = 'RENT' | 'SALE'
 
 export type Property = {
   id: string
   title: string
   type: PropertyType
+  listingType?: ListingType // NEW
   rent: number
+  salePrice?: number // NEW
   location: string
   description?: string
   image: string
   images?: string[]
   status: PropertyStatus
   createdAt: string
+  updatedAt?: string
   views: number
   isVerified?: boolean
   isAvailable?: boolean
@@ -28,12 +32,15 @@ export type Property = {
   townSector?: string
   bhk?: number
   furnished?: string
+  verificationStatus?: string
+  verificationExpiry?: Date
 }
 
 export type Lead = {
   id: string
   propertyId: string
   propertyTitle?: string
+  propertyListingType?: 'RENT' | 'SALE' // NEW
   seekerName: string
   seekerEmail?: string
   seekerPhone: string
@@ -43,11 +50,30 @@ export type Lead = {
   contactType?: string
 }
 
+export type PropertyStats = {
+  total: number;
+  rental: {
+    total: number;
+    active: number;
+    draft: number;
+    paused: number;
+  };
+  sale: {
+    total: number;
+    active: number;
+    draft: number;
+    paused: number;
+  };
+  drafts: number;
+  published: number;
+};
+
 export function useOwnerData() {
   const { user, owner, setOwner } = useAuth()
   const { toast } = useToast()
   const [properties, setProperties] = useState<Property[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
+  const [propertyStats, setPropertyStats] = useState<PropertyStats | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -92,7 +118,9 @@ export function useOwnerData() {
           id: prop.id,
           title: prop.title,
           type: prop.propertyType as PropertyType,
+          listingType: prop.listingType as ListingType, // NEW
           rent: parseInt(prop.rent) || 0,
+          salePrice: prop.salePrice ? parseInt(prop.salePrice) : undefined, // NEW
           location: `${prop.city}${prop.townSector ? ', ' + prop.townSector : ''}`,
           city: prop.city,
           townSector: prop.townSector,
@@ -101,15 +129,30 @@ export function useOwnerData() {
           images: prop.images || [],
           status: prop.isDraft ? 'PAUSED' : prop.isAvailable ? 'ACTIVE' : 'PAUSED',
           createdAt: prop.createdAt,
+          updatedAt: prop.updatedAt,
           views: prop.contactCount || 0,
           isVerified: prop.isVerified,
           isAvailable: prop.isAvailable,
           isDraft: prop.isDraft,
           contactCount: prop.contactCount,
           bhk: prop.bhk,
-          furnished: prop.furnished
+          furnished: prop.furnished,
+          verificationStatus: prop.verificationStatus,
+          verificationExpiry: prop.verificationExpiry ? new Date(prop.verificationExpiry) : undefined,
         }))
         setProperties(formattedProperties)
+        
+        // Extract and set property stats from meta
+        if ((response as any).meta) {
+          const meta = (response as any).meta;
+          setPropertyStats({
+            total: meta.total || 0,
+            rental: meta.rental || { total: 0, active: 0, draft: 0, paused: 0 },
+            sale: meta.sale || { total: 0, active: 0, draft: 0, paused: 0 },
+            drafts: (meta.rental?.draft || 0) + (meta.sale?.draft || 0),
+            published: (meta.rental?.active || 0) + (meta.sale?.active || 0),
+          });
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load properties')
@@ -131,6 +174,7 @@ export function useOwnerData() {
           id: contact.id,
           propertyId: contact.propertyId,
           propertyTitle: contact.property?.title || 'Property',
+          propertyListingType: contact.property?.listingType || 'RENT', // NEW
           seekerName: contact.userName,
           seekerEmail: '',
           seekerPhone: contact.userPhone,
@@ -363,10 +407,12 @@ export function useOwnerData() {
     }
   }, [loadProperties, toast])
 
+
   return {
     properties,
     leads,
     totals,
+    propertyStats,
     isLoading,
     error,
     addProperty,

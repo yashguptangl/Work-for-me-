@@ -57,11 +57,17 @@ const PropertyDetail = () => {
         if (response.success && response.data) {
           const foundProperty = response.data;
           // Transform API data to match our UI structure
+          const listingType = foundProperty.listingType || 'RENT';
+          const price = listingType === 'SALE' 
+            ? Number(foundProperty.saleValue || foundProperty.salePrice || 0)
+            : Number(foundProperty.rentValue || foundProperty.rent || 0);
+          
           const transformedProperty = {
             id: String(foundProperty.id),
             title: foundProperty.title,
             type: foundProperty.propertyType || 'ROOM',
-            price: Number(foundProperty.rent || 0),
+            listingType: listingType,
+            price: price,
             location: [foundProperty.city, foundProperty.townSector].filter(Boolean).join(', '),
             address: foundProperty.address || '',
             images: (foundProperty as any).imageUrls && (foundProperty as any).imageUrls.length ? (foundProperty as any).imageUrls : [heroProperty],
@@ -74,21 +80,31 @@ const PropertyDetail = () => {
             ownerPhone: foundProperty.whatsappNo || '',
             availableFrom: foundProperty.createdAt ? new Date(foundProperty.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
             description: foundProperty.description || '',
-            rules: [
+            rules: listingType === 'RENT' ? [
               foundProperty.noticePeriod ? `Notice Period: ${foundProperty.noticePeriod}` : '',
               foundProperty.genderPreference ? `Gender Preference: ${foundProperty.genderPreference}` : '',
               foundProperty.preferredTenants && foundProperty.preferredTenants.length ? `Preferred Tenants: ${foundProperty.preferredTenants.join(', ')}` : ''
-            ].filter(Boolean),
+            ].filter(Boolean) : [],
             nearbyPlaces: [
               { name: foundProperty.landmark || 'Nearby Landmark', distance: 'Walking distance', type: 'Landmark' },
               { name: foundProperty.colony || 'Colony', distance: 'In area', type: 'Area' }
             ].filter(place => place.name !== 'Nearby Landmark' || foundProperty.landmark),
-            // Additional property details
-            bhk: foundProperty.bhk,
-            furnished: foundProperty.furnished,
+            // Rental property details
             accommodation: foundProperty.accommodation,
             security: foundProperty.security,
             maintenance: foundProperty.maintenance,
+            // Sale property details
+            carpetArea: foundProperty.carpetArea,
+            builtUpArea: foundProperty.builtUpArea,
+            pricePerSqft: foundProperty.pricePerSqft,
+            propertyAge: foundProperty.propertyAge,
+            floorNumber: foundProperty.floorNumber,
+            facingDirection: foundProperty.facingDirection,
+            possession: foundProperty.possession,
+            furnishingDetails: foundProperty.furnishingDetails,
+            // Common property details
+            bhk: foundProperty.bhk,
+            furnished: foundProperty.furnished,
             negotiable: foundProperty.negotiable,
             powerBackup: foundProperty.powerBackup,
             waterSupply: foundProperty.waterSupply,
@@ -206,7 +222,7 @@ const PropertyDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <title>{property.title} - Rooms Dekho | Verified PG in {property.location}</title>
+      <title>{property.title} - Roomlocate | Verified PG in {property.location}</title>
 
       <AnimatePresence mode="wait">
       <motion.div
@@ -236,11 +252,14 @@ const PropertyDetail = () => {
                 unoptimized
               />
               <div className="absolute inset-0 bg-black/10" />
-              {/* type badge */}
-              <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+              {/* type badges */}
+              <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1.5">
                 <Badge className="bg-primary text-primary-foreground flex items-center gap-1 text-xs">
                   <Users className="w-3 h-3" />
                   {property.type}
+                </Badge>
+                <Badge className={property.listingType === 'SALE' ? 'bg-purple-600 text-white flex items-center gap-1 text-xs' : 'bg-green-600 text-white flex items-center gap-1 text-xs'}>
+                  {property.listingType === 'SALE' ? 'For Sale' : 'For Rent'}
                 </Badge>
               </div>
               {/* actions */}
@@ -327,22 +346,26 @@ const PropertyDetail = () => {
                 </div>
                 <div className="text-left sm:text-right">
                   <div className="text-lg sm:text-xl font-bold text-primary leading-tight">₹{property.price.toLocaleString()}</div>
-                  <div className="text-[10px] sm:text-[11px] text-muted-foreground">per month</div>
+                  <div className="text-[10px] sm:text-[11px] text-muted-foreground">
+                    {property.listingType === 'SALE' ? 'Total Price' : 'per month'}
+                  </div>
                 </div>
               </div>
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 {property.isVerified && (
                   <div className="verified-badge text-xs"><Shield className="w-3 h-3" />Verified Owner</div>
                 )}
-                <Badge className={
-                  property.gender === 'male' ? 'bg-blue-100 text-blue-800' :
-                  property.gender === 'female' ? 'bg-pink-100 text-pink-800' :
-                  'bg-purple-100 text-purple-800'
-                }>
-                  <span className="text-xs">
-                    {property.gender === 'male' ? 'Boys Only' : property.gender === 'female' ? 'Girls Only' : 'Co-ed'}
-                  </span>
-                </Badge>
+                {property.listingType === 'RENT' && (
+                  <Badge className={
+                    property.gender === 'male' ? 'bg-blue-100 text-blue-800' :
+                    property.gender === 'female' ? 'bg-pink-100 text-pink-800' :
+                    'bg-purple-100 text-purple-800'
+                  }>
+                    <span className="text-xs">
+                      {property.gender === 'male' ? 'Boys Only' : property.gender === 'female' ? 'Girls Only' : 'Co-ed'}
+                    </span>
+                  </Badge>
+                )}
                 {property.negotiable && (
                   <Badge className="bg-green-100 text-green-800">
                     <span className="text-xs">Negotiable</span>
@@ -505,22 +528,24 @@ const PropertyDetail = () => {
               </Card>
             </motion.div>
 
-            {/* Rules */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}>
-              <Card>
-                <CardContent className="p-4 sm:p-6">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">House Rules</h2>
-                  <ul className="space-y-2">
-                    {property.rules.map((rule: string, index: number) => (
-                      <li key={index} className="flex items-start space-x-2">
-                        <CheckCircle className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                        <span className="text-muted-foreground">{rule}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
+            {/* Rules - Only for RENT */}
+            {property.listingType === 'RENT' && property.rules && property.rules.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}>
+                <Card>
+                  <CardContent className="p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">House Rules</h2>
+                    <ul className="space-y-2">
+                      {property.rules.map((rule: string, index: number) => (
+                        <li key={index} className="flex items-start space-x-2">
+                          <CheckCircle className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
+                          <span className="text-muted-foreground">{rule}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
             {/* Nearby Places */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }}>
@@ -566,7 +591,9 @@ const PropertyDetail = () => {
                         </div>
                       </div>
                     )}
-                    {property.accommodation && (
+                    
+                    {/* RENT-specific fields */}
+                    {property.listingType === 'RENT' && property.accommodation && (
                       <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
                         <Users className="w-5 h-5 text-primary" />
                         <div>
@@ -575,24 +602,91 @@ const PropertyDetail = () => {
                         </div>
                       </div>
                     )}
-                    {property.security && (
+                    {property.listingType === 'RENT' && property.security && (
                       <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
-                          <div className="font-medium">{property.security}</div>
-                          <div className="text-sm text-muted-foreground">Security</div>
+                          <div className="font-medium">₹{property.security}</div>
+                          <div className="text-sm text-muted-foreground">Security Deposit</div>
                         </div>
                       </div>
                     )}
-                    {property.maintenance && (
+                    {property.listingType === 'RENT' && property.maintenance && (
                       <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
                         <CheckCircle className="w-5 h-5 text-primary" />
                         <div>
-                          <div className="font-medium">{property.maintenance}</div>
+                          <div className="font-medium">₹{property.maintenance}</div>
                           <div className="text-sm text-muted-foreground">Maintenance</div>
                         </div>
                       </div>
                     )}
+                    
+                    {/* SALE-specific fields */}
+                    {property.listingType === 'SALE' && property.carpetArea && (
+                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                        <Home className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{property.carpetArea} sq.ft</div>
+                          <div className="text-sm text-muted-foreground">Carpet Area</div>
+                        </div>
+                      </div>
+                    )}
+                    {property.listingType === 'SALE' && property.builtUpArea && (
+                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                        <Home className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{property.builtUpArea} sq.ft</div>
+                          <div className="text-sm text-muted-foreground">Built-up Area</div>
+                        </div>
+                      </div>
+                    )}
+                    {property.listingType === 'SALE' && property.pricePerSqft && (
+                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">₹{property.pricePerSqft}</div>
+                          <div className="text-sm text-muted-foreground">Price/sq.ft</div>
+                        </div>
+                      </div>
+                    )}
+                    {property.listingType === 'SALE' && property.propertyAge && (
+                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                        <Calendar className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{property.propertyAge}</div>
+                          <div className="text-sm text-muted-foreground">Property Age</div>
+                        </div>
+                      </div>
+                    )}
+                    {property.listingType === 'SALE' && property.floorNumber && (
+                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                        <Home className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">Floor {property.floorNumber}</div>
+                          <div className="text-sm text-muted-foreground">Floor Number</div>
+                        </div>
+                      </div>
+                    )}
+                    {property.listingType === 'SALE' && property.facingDirection && (
+                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{property.facingDirection}</div>
+                          <div className="text-sm text-muted-foreground">Facing</div>
+                        </div>
+                      </div>
+                    )}
+                    {property.listingType === 'SALE' && property.possession && (
+                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{property.possession}</div>
+                          <div className="text-sm text-muted-foreground">Possession</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Common fields */}
                     {property.parking && (
                       <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
                         <Car className="w-5 h-5 text-primary" />

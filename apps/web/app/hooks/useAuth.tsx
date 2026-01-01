@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/sonner";
 import { apiClient, User, Owner } from "@/lib/api";
 
-export type Role = "ADMIN" | "OWNER" | "SEEKER";
+export type Role = "OWNER" | "SEEKER";
 export type AuthUser = {
   createdAt: string;
   id: string;

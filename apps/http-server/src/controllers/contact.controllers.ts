@@ -153,8 +153,11 @@ export const userContactFullDetails = async (req: Request, res: Response) => {
                         id: true,
                         title: true,
                         city: true,
+                        townSector: true,
                         address: true,
                         rent: true,
+                        salePrice: true,
+                        listingType: true,
                         propertyType: true,
                         contactName: true,
                         whatsappNo: true,
@@ -207,8 +210,11 @@ export const ownerContactFullDetails = async (req: Request , res: Response) =>{
                         id: true,
                         title: true,
                         city: true,
+                        townSector: true,
                         address: true,
                         rent: true,
+                        salePrice: true,
+                        listingType: true,
                         propertyType: true,
                         isAvailable: true
                     }

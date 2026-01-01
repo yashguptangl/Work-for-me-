@@ -70,9 +70,9 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             {/* Site Logo */}
-            <img src="/icon.png" alt="Rooms Dekho" className="w-8 h-8 rounded-lg object-contain" />
+            <img src="/icon.png" alt="Roomlocate" className="w-8 h-8 rounded-lg object-contain" />
             <div>
-              <span className="text-lg sm:text-xl font-bold text-gradient">Rooms Dekho</span>
+              <span className="text-lg sm:text-xl font-bold text-gradient">Roomlocate</span>
               <p className="text-xs text-muted-foreground hidden sm:block">Verified Rooms. Local Trust.</p>
             </div>
           </Link>
@@ -212,7 +212,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Hidden on small screens, visible on md+ */}
           <motion.button
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -223,8 +223,8 @@ const Navbar = () => {
           </motion.button>
         </div>
 
-        {/* Mobile Menu */}
-        <div className="md:hidden">
+        {/* Mobile Menu - Hidden on small screens */}
+        <div className="hidden md:block lg:hidden">
           <MobileMenu open={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={mounted ? user : null} onLogout={logout} />
         </div>
       </div>

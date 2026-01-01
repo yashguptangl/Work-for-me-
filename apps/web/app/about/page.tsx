@@ -43,7 +43,7 @@ const About = () => {
     {
       name: 'Yash Gupta',
       role: 'Founder & CEO',
-      description: 'Co-founder leading product and growth at Rooms Dekho.',
+      description: 'Co-founder leading product and growth at Roomlocate.',
       image: heroProperty,
     },
     {
@@ -55,7 +55,7 @@ const About = () => {
   ];
 
   const milestones = [
-    { year: '2025', title: 'Founded', description: 'Rooms Dekho was founded with a vision to solve student housing challenges' },
+    { year: '2025', title: 'Founded', description: 'Roomlocate was founded with a vision to solve student housing challenges' },
     { year: '2026', title: '1000+ Users Target', description: 'Aim to onboard 1000+ verified users with quality listings and support' },
     { year: '2027', title: 'Fastest Growing Company', description: 'Target to become one of the fastest growing housing platforms' },
     { year: '2028', title: 'AI-Integrated Workflows', description: 'Deep AI integrations to enhance matching, verification and support' },
@@ -64,7 +64,7 @@ const About = () => {
   return (
     <div className="relative min-h-screen bg-background">
       {/* SEO Meta */}
-      <title>About Rooms Dekho - Trusted Student Housing Platform | Our Story</title>
+      <title>About Roomlocate - Trusted Student Housing Platform | Our Story</title>
 
       {/* Hero Section with animation and soft gradient background */}
       <section className="relative py-20 bg-primary/5 overflow-hidden">
@@ -86,7 +86,7 @@ const About = () => {
             Our Story
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            About <span className="text-gradient">Rooms Dekho</span>
+            About <span className="text-gradient">Roomlocate</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             We're on a mission to make finding safe, affordable, and comfortable accommodation 
@@ -120,12 +120,12 @@ const About = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p className="text-lg">
-                  Rooms Dekho was born out of personal frustration. As students ourselves, we experienced 
+                  Roomlocate was born out of personal frustration. As students ourselves, we experienced 
                   the challenges of finding safe, affordable, and reliable accommodation in new cities.
                 </p>
                 <p>
                   From dealing with unverified landlords to paying hefty broker fees, from unsafe neighborhoods 
-                  to hidden charges - we've been through it all. That's why we created Rooms Dekho - to ensure 
+                  to hidden charges - we've been through it all. That's why we created Roomlocate - to ensure 
                   no student has to go through the same struggles we did.
                 </p>
                 <p>
@@ -209,7 +209,7 @@ const About = () => {
         <div className="container mx-auto px-16">
           <div className="text-center mb-12">
             <Badge className="mb-4 trust-badge">Meet the Team</Badge>
-            <h2 className="text-3xl font-bold mb-4">The People Behind Rooms Dekho</h2>
+            <h2 className="text-3xl font-bold mb-4">The People Behind Roomlocate</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               A passionate team of developers, designers, and real estate experts working to revolutionize student housing.
             </p>
@@ -239,7 +239,7 @@ const About = () => {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Find Your Home?</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Join thousands of students who have found their perfect accommodation through Rooms Dekho.
+            Join thousands of students who have found their perfect accommodation through Roomlocate.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/properties">

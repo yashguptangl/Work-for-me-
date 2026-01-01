@@ -51,7 +51,6 @@ export const citiesData: { [key: string]: string[] } = {
       "Munirka",
       "RK Puram",
       "Dwarka",
-      "Dwarka",
       "Janakpuri",
       "Vasant Kunj",
       "Vasant Vihar",

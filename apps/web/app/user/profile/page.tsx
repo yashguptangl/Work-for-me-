@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useUserData } from "@/hooks/useUserData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import { User, Mail, Phone, Calendar, Heart, Search, Shield, Loader2 } from "luc
 
 const UserProfilePage = () => {
   const { user, requireRole } = useAuth();
+  const { wishlist, contacts } = useUserData();
   const router = useRouter();
 
   useEffect(() => {
@@ -81,7 +83,9 @@ const UserProfilePage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">0</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">
+                  {Array.isArray(wishlist) ? wishlist.length : 0}
+                </div>
                 <p className="text-xs text-muted-foreground mt-1 hidden sm:block">Saved Properties</p>
               </CardContent>
             </Card>
@@ -95,7 +99,9 @@ const UserProfilePage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-600">0</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-600">
+                  {Array.isArray(contacts) ? contacts.length : 0}
+                </div>
                 <p className="text-xs text-muted-foreground mt-1 hidden sm:block">Recent Searches</p>
               </CardContent>
             </Card>

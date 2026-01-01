@@ -2,15 +2,17 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useOwnerData } from "@/hooks/useOwnerData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Mail, Phone, Calendar, Home, Shield, Loader2, Crown, Package } from "lucide-react";
+import { Building2, Mail, Phone, Calendar, Home, Shield, Loader2, Crown, Package, FileText } from "lucide-react";
 
 const OwnerProfilePage = () => {
   const { owner, requireRole } = useAuth();
+  const { propertyStats, isLoading: statsLoading } = useOwnerData();
   const router = useRouter();
 
   useEffect(() => {
@@ -30,7 +32,7 @@ const OwnerProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
-      <div className="container mx-auto py-3 sm:py-4 md:py-6 lg:py-8 px-2 sm:px-3 md:px-4 lg:px-6 max-w-6xl">
+      <div className="container mx-auto py-3 sm:py-4 md:py-6 lg:py-8 px-2 sm:px-3 md:px-4 lg:px-6 max-w-7xl">
         {/* Header Card */}
         <Card className="mb-3 sm:mb-4 md:mb-6 shadow-lg border-2">
           <CardContent className="pt-3 sm:pt-4 md:pt-6 px-3 sm:px-4 md:px-6">
@@ -71,38 +73,125 @@ const OwnerProfilePage = () => {
           </CardContent>
         </Card>
 
+        {/* Property Statistics Section - Full Width */}
+        {propertyStats && (
+          <Card className="mb-3 sm:mb-4 md:mb-6 shadow-lg border-2">
+            <CardHeader className="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+              <CardTitle className="text-base sm:text-lg md:text-xl flex items-center gap-2">
+                <Home className="h-5 w-5 text-blue-600" />
+                Property Statistics
+              </CardTitle>
+              <CardDescription className="text-[10px] sm:text-xs md:text-sm">
+                Overview of your property listings
+              </CardDescription>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-3 sm:pt-4 md:pt-6 px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+                {/* Total Properties */}
+                <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-sm hover:shadow-md transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-2 sm:p-2.5 md:p-3">
+                    <CardTitle className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-600">Total</CardTitle>
+                    <Home className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-blue-600 flex-shrink-0" />
+                  </CardHeader>
+                  <CardContent className="p-2 sm:p-2.5 md:p-3 pt-0">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">{propertyStats.total}</div>
+                    <div className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 mt-0.5">
+                      All properties
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Rental Properties */}
+                <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-white shadow-sm hover:shadow-md transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-2 sm:p-2.5 md:p-3">
+                    <CardTitle className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-600">Rental</CardTitle>
+                    <Home className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-green-600 flex-shrink-0" />
+                  </CardHeader>
+                  <CardContent className="p-2 sm:p-2.5 md:p-3 pt-0">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600">{propertyStats.rental.total}</div>
+                    <div className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 mt-0.5">
+                      {propertyStats.rental.active} active
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Buy/Sell Properties */}
+                <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white shadow-sm hover:shadow-md transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-2 sm:p-2.5 md:p-3">
+                    <CardTitle className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-600">Buy/Sell</CardTitle>
+                    <Building2 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-purple-600 flex-shrink-0" />
+                  </CardHeader>
+                  <CardContent className="p-2 sm:p-2.5 md:p-3 pt-0">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-600">{propertyStats.sale.total}</div>
+                    <div className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 mt-0.5">
+                      {propertyStats.sale.active} active
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Draft Properties */}
+                <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white shadow-sm hover:shadow-md transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-2 sm:p-2.5 md:p-3">
+                    <CardTitle className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-600">Drafts</CardTitle>
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-amber-600 flex-shrink-0" />
+                  </CardHeader>
+                  <CardContent className="p-2 sm:p-2.5 md:p-3 pt-0">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-600">{propertyStats.drafts}</div>
+                    <div className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 mt-0.5">
+                      Pending review
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Published Properties */}
+                <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white shadow-sm hover:shadow-md transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-2 sm:p-2.5 md:p-3">
+                    <CardTitle className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-600">Published</CardTitle>
+                    <Home className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-emerald-600 flex-shrink-0" />
+                  </CardHeader>
+                  <CardContent className="p-2 sm:p-2.5 md:p-3 pt-0">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-600">{propertyStats.published}</div>
+                    <div className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 mt-0.5">
+                      Live now
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Profile Details and Quick Stats Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          {/* Stats Cards */}
-          <div className="lg:col-span-1 grid grid-cols-3 lg:grid-cols-1 gap-2 sm:gap-3 md:gap-4">
-            <Card className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
-              <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 px-2 sm:px-3 md:px-6 pt-2 sm:pt-3 md:pt-6">
-                <CardTitle className="text-[10px] sm:text-xs md:text-sm font-medium text-muted-foreground">
-                  <Home className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 inline mr-1 sm:mr-1.5 md:mr-2" />
-                  <span className="hidden sm:inline">Active Listings</span>
-                  <span className="sm:hidden">Listings</span>
+          {/* Quick Stats Sidebar */}
+          <div className="lg:col-span-1">
+            <Card className="shadow-lg mb-3 sm:mb-4 md:mb-6 lg:mb-0">
+              <CardHeader className="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+                <CardTitle className="text-base sm:text-lg md:text-xl flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-purple-600" />
+                  Quick Stats
                 </CardTitle>
               </CardHeader>
-              <CardContent className="px-2 sm:px-3 md:px-6 pb-2 sm:pb-3 md:pb-6">
-                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-green-600">{owner.listings || 0}</div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 hidden sm:block">
-                  Properties Listed
-                </p>
-              </CardContent>
-            </Card>
+              <Separator />
+              <CardContent className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
+                <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Active Listings</p>
+                    <Home className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                  </div>
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600">{owner.listings || 0}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Properties Listed</p>
+                </div>
 
-
-
-            <Card className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
-              <CardHeader className="pb-1.5 sm:pb-2 md:pb-3 px-2 sm:px-3 md:px-6 pt-2 sm:pt-3 md:pt-6">
-                <CardTitle className="text-[10px] sm:text-xs md:text-sm font-medium text-muted-foreground">
-                  <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 inline mr-1 sm:mr-1.5 md:mr-2" />
-                  <span className="hidden sm:inline">Member Since</span>
-                  <span className="sm:hidden">Since</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-2 sm:px-3 md:px-6 pb-2 sm:pb-3 md:pb-6">
-                <div className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold">{new Date().getFullYear()}</div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 hidden sm:block">Active Owner</p>
+                <div className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Member Since</p>
+                    <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                  </div>
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-600">{new Date().getFullYear()}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Active Owner</p>
+                </div>
               </CardContent>
             </Card>
           </div>

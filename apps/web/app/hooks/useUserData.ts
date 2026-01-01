@@ -36,7 +36,9 @@ export type Property = {
   id: string
   title: string
   type: string
+  listingType?: 'RENT' | 'SALE' // NEW
   rent: number
+  salePrice?: number // NEW
   location: string
   image: string
   images?: string[]
@@ -124,7 +126,9 @@ export function useUserData() {
             id: item.property?.id,
             title: item.property?.title,
             type: item.property?.propertyType,
+            listingType: item.property?.listingType || 'RENT',
             rent: parseInt(item.property?.rent || 0),
+            salePrice: item.property?.salePrice ? parseInt(item.property.salePrice) : undefined,
             location: `${item.property?.city || ''}${item.property?.townSector ? ', ' + item.property.townSector : ''}`.trim() || 'Location not available',
             image: item.property?.imageUrl || item.property?.coverImage || '/placeholder.svg',
             city: item.property?.city,
@@ -170,7 +174,9 @@ export function useUserData() {
             id: contact.property.id,
             title: contact.property.title,
             type: contact.property.propertyType,
-            rent: parseInt(contact.property.rent),
+            listingType: contact.property.listingType || 'RENT',
+            rent: parseInt(contact.property.rent || 0),
+            salePrice: contact.property.salePrice ? parseInt(contact.property.salePrice) : undefined,
             location: `${contact.property.city}${contact.property.townSector ? ', ' + contact.property.townSector : ''}`,
             image: '/placeholder.svg',
             city: contact.property.city,

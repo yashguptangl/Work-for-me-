@@ -107,8 +107,8 @@ export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <img src="/icon.png" alt="Rooms Dekho" className="w-8 h-8 rounded-full object-cover bg-gray-100" />
-                <h2 className="text-xl font-semibold">Rooms Dekho</h2>
+                <img src="/icon.png" alt="Roomlocate" className="w-8 h-8 rounded-full object-cover bg-gray-100" />
+                <h2 className="text-xl font-semibold">Roomlocate</h2>
               </div>
               <motion.button whileTap={{ scale: 0.9, rotate: 90 }} onClick={onClose} aria-label="Close menu" className="p-2 text-xl">✕</motion.button>
             </div>

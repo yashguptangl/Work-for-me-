@@ -8,6 +8,8 @@ enum PropertyType {
   PG = "PG",
   FLAT = "FLAT",
   ROOM = "ROOM",
+  HOUSE = "HOUSE",
+  VILLA = "VILLA",
 }
 
 
@@ -19,6 +21,7 @@ export const createPropertyController = async (req: Request, res: Response): Pro
       title,
       description,
       propertyType,
+      listingType, // NEW: "RENT" or "SALE"
       address,
       city,
       townSector,
@@ -27,21 +30,33 @@ export const createPropertyController = async (req: Request, res: Response): Pro
       latitude,
       longitude,
       apiAddress,
+      // Rental fields
       rent,
-      negotiable,
       security,
       maintenance,
+      accommodation,
+      genderPreference,
+      preferredTenants,
+      noticePeriod,
+      // Sale fields (NEW)
+      salePrice,
+      carpetArea,
+      builtUpArea,
+      pricePerSqft,
+      propertyAge,
+      floorNumber,
+      facingDirection,
+      possession,
+      furnishingDetails,
+      // Common fields
+      negotiable,
       bhk,
       furnished,
-      accommodation,
       totalFloors,
       totalUnits,
       powerBackup,
       waterSupply,
       parking,
-      genderPreference,
-      preferredTenants,
-      noticePeriod,
       insideAmenities,
       outsideAmenities,
       contactName,
@@ -64,32 +79,60 @@ export const createPropertyController = async (req: Request, res: Response): Pro
       return;
     }
 
-    // Required field validation
-    const requiredFields = {
+    // Validate listing type
+    if (!listingType || !['RENT', 'SALE'].includes(listingType)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid listing type. Must be RENT or SALE",
+      });
+      return;
+    }
+
+    // Build required fields based on listing type
+    let requiredFields: any = {
       title,
       description,
       propertyType,
+      listingType,
       address,
       city,
       townSector,
       colony,
-      rent,
-      security,
-      maintenance,
       bhk,
       furnished,
-      accommodation,
       totalFloors,
       totalUnits,
       powerBackup,
       waterSupply,
       parking,
-      genderPreference,
-      preferredTenants,
-      noticePeriod,
       contactName,
       whatsappNo,
     };
+
+    if (listingType === 'RENT') {
+      // Additional required fields for rental properties
+      requiredFields = {
+        ...requiredFields,
+        rent,
+        security,
+        maintenance,
+        accommodation,
+        genderPreference,
+        preferredTenants,
+        noticePeriod,
+      };
+    } else if (listingType === 'SALE') {
+      // Additional required fields for sale properties
+      requiredFields = {
+        ...requiredFields,
+        salePrice,
+        carpetArea,
+        builtUpArea,
+        facingDirection,
+        propertyAge,
+        possession,
+      };
+    }
 
     const missingFields = Object.entries(requiredFields)
       .filter(([_, value]) => !value && value !== 0 && value !== false)
@@ -104,11 +147,11 @@ export const createPropertyController = async (req: Request, res: Response): Pro
     }
 
     // Validate property type
-    const validTypes = ['PG', 'FLAT', 'ROOM',];
+    const validTypes = ['PG', 'FLAT', 'ROOM', 'HOUSE', 'VILLA'];
     if (!validTypes.includes(propertyType)) {
       res.status(400).json({
         success: false,
-        message: "Invalid property type. Must be PG, FLAT, ROOM",
+        message: "Invalid property type. Must be PG, FLAT, ROOM, HOUSE, or VILLA",
       });
       return;
     }
@@ -157,6 +200,7 @@ export const createPropertyController = async (req: Request, res: Response): Pro
         title,
         description,
         propertyType,
+        listingType, // NEW
         address,
         city,
         townSector,
@@ -165,27 +209,42 @@ export const createPropertyController = async (req: Request, res: Response): Pro
         latitude: latitude ? parseFloat(latitude) : null,
         longitude: longitude ? parseFloat(longitude) : null,
         apiAddress: apiAddress || null,
-        rent: rent.toString(),
+        
+        // Rental fields
+        rent: listingType === 'RENT' ? rent?.toString() : null,
+        security: listingType === 'RENT' ? security?.toString() : null,
+        maintenance: listingType === 'RENT' ? maintenance?.toString() : null,
+        accommodation: listingType === 'RENT' ? accommodation : null,
+        genderPreference: listingType === 'RENT' ? genderPreference : null,
+        preferredTenants: listingType === 'RENT' ? (preferredTenants || []) : [],
+        noticePeriod: listingType === 'RENT' ? noticePeriod : null,
+        
+        // Sale fields (NEW)
+        salePrice: listingType === 'SALE' ? salePrice?.toString() : null,
+        carpetArea: listingType === 'SALE' ? carpetArea?.toString() : null,
+        builtUpArea: listingType === 'SALE' ? builtUpArea?.toString() : null,
+        pricePerSqft: listingType === 'SALE' ? pricePerSqft?.toString() : null,
+        propertyAge: listingType === 'SALE' ? propertyAge : null,
+        floorNumber: floorNumber ? parseInt(floorNumber) : null,
+        facingDirection: listingType === 'SALE' ? facingDirection : null,
+        possession: listingType === 'SALE' ? possession : null,
+        furnishingDetails: listingType === 'SALE' ? furnishingDetails : null,
+        
+        // Common fields
         negotiable: negotiable !== undefined ? negotiable : false,
-        security: security.toString(),
-        maintenance: maintenance.toString(),
         bhk: parseInt(bhk),
         furnished,
-        accommodation,
         totalFloors: parseInt(totalFloors),
         totalUnits: parseInt(totalUnits),
         powerBackup,
         waterSupply,
         parking,
-        genderPreference,
-        preferredTenants: preferredTenants || [],
-        noticePeriod,
         insideAmenities: insideAmenities || [],
         outsideAmenities: outsideAmenities || [],
         contactName,
         whatsappNo,
         offer: offer || '',
-        type: type || 'RENT',
+        type: type || listingType,
         isAvailable: isAvailable !== undefined ? isAvailable : true,
         isDraft: isDraft !== undefined ? isDraft : false,
         isVerified: false, 
@@ -361,15 +420,28 @@ export const getOwnerPropertiesController = async (req: Request, res: Response):
       })
     );
 
+    // Group properties by listing type
+    const rentalProperties = propertiesWithImages.filter(p => p.listingType === 'RENT');
+    const saleProperties = propertiesWithImages.filter(p => p.listingType === 'SALE');
+
     res.status(200).json({
       success: true,
       message: "Properties fetched successfully",
       data: propertiesWithImages,
       meta: {
         total: propertiesWithImages.length,
-        active: propertiesWithImages.filter(p => p.isAvailable && !p.isDraft).length,
-        draft: propertiesWithImages.filter(p => p.isDraft).length,
-        paused: propertiesWithImages.filter(p => !p.isAvailable && !p.isDraft).length
+        rental: {
+          total: rentalProperties.length,
+          active: rentalProperties.filter(p => p.isAvailable && !p.isDraft).length,
+          draft: rentalProperties.filter(p => p.isDraft).length,
+          paused: rentalProperties.filter(p => !p.isAvailable && !p.isDraft).length
+        },
+        sale: {
+          total: saleProperties.length,
+          active: saleProperties.filter(p => p.isAvailable && !p.isDraft).length,
+          draft: saleProperties.filter(p => p.isDraft).length,
+          paused: saleProperties.filter(p => !p.isAvailable && !p.isDraft).length
+        }
       }
     });
 

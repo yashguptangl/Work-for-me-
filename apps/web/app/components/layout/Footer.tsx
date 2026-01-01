@@ -47,7 +47,7 @@ const Footer = () => {
                 <Home className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">Rooms Dekho</h3>
+                <h3 className="text-lg font-bold">Roomlocate</h3>
                 <p className="text-xs text-white/70">Verified Rooms. Local Trust.</p>
               </div>
             </div>
@@ -81,7 +81,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/10 mt-10 pt-6 text-center text-white/70 text-sm">
-          © 2025 Rooms Dekho. All rights reserved.
+          © 2025 Roomlocate. All rights reserved.
         </div>
       </div>
     </footer>
