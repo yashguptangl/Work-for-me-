@@ -28,13 +28,39 @@ const SeekerSignupForm = () => {
   const { signup, isLoading } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'phone') {
+      // Only allow numeric input and limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.firstName || !formData.lastName || !formData.phone || !formData.email || !formData.password) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    // Validate mobile number
+    if (formData.phone.length !== 10) {
+      alert('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
+    // Validate password
+    if (formData.password.length < 6) {
+      alert('Password must be at least 6 characters long');
       return;
     }
 
@@ -53,6 +79,14 @@ const SeekerSignupForm = () => {
       
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Trust Badge */}
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-primary" />
+              <p className="text-sm font-medium text-primary">Join verified seekers on roomkarts</p>
+            </div>
+          </div>
+
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -91,10 +125,13 @@ const SeekerSignupForm = () => {
               <Input
                 id="phone"
                 type="tel"
-                placeholder="98765 43210"
+                placeholder="10-digit mobile number"
                 className="pl-10"
                 value={formData.phone}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('phone', e.target.value)}
+                pattern="[0-9]{10}"
+                maxLength={10}
+                minLength={10}
                 required
               />
             </div>

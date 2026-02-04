@@ -12,13 +12,13 @@ export default function PricingHeader() {
         className="container mx-auto px-4 py-14 md:py-20 text-center"
       >
         <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-700 mb-4">
-          Flexible • Transparent • No Hidden Fees
+          100% Free • No Hidden Fees • Forever
         </div>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">
-          Our Plans
+          List Your Properties for Free
         </h1>
         <p className="text-muted-foreground max-w-3xl mx-auto text-sm md:text-base">
-          Choose the right plan to list your property and reach verified students & professionals.
+          All features included. No credit card required. Start listing your properties today.
         </p>
       </motion.div>
 

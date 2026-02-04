@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search as SearchIcon, Navigation, Building2 } from "lucide-react";
+import { Search as SearchIcon, Navigation } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -26,20 +26,19 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
   const [category, setCategory] = useState("all");
   const [q] = useState("");
   const [city, setCity] = useState("");
-  const [sector, setSector] = useState("");
 
   const handleAddListing = () => {
     if (user?.role === 'OWNER') {
       router.push('/owner/dashboard');
     } else {
-      router.push('/signup?type=owner');
+      router.push('/login?type=owner');
     }
   };
 
   const handleSearch = () => {
-    if (!city || !sector) {
+    if (!city) {
       toast.error('⚠️ Required Fields Missing', {
-        description: 'Please select both city and area to search properties'
+        description: 'Please select city to search properties'
       });
       return;
     }
@@ -48,11 +47,11 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
     
     if (q.trim() === '' && category === 'all') {
       toast.info('🔍 Broad Search', {
-        description: `Searching all ${listingType === 'RENT' ? 'rental' : 'sale'} properties in your selected area`
+        description: `Searching all ${listingType === 'RENT' ? 'rental' : 'sale'} properties in ${city}`
       });
     }
     
-    onSearch?.({ tab: active, category, q, city, sector });
+    onSearch?.({ tab: active, category, q, city, sector: "" });
   };
 
   const handleNearMeClick = async () => {
@@ -87,7 +86,6 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
   };
 
   const cityOptions = Object.keys(citiesData);
-  const sectorOptions = city ? (citiesData[city] ?? []) : [];
 
   // Property categories based on listing type
   const getPropertyCategories = () => {
@@ -116,10 +114,10 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative z-20 -mt-8 sm:-mt-10 md:-mt-12 lg:-mt-16"
+      className="relative z-20 -mt-10 mb-14 sm:-mt-20 sm:mb-10 md:-mt-24 md:mb-12 lg:-mt-16 lg:mb-16 xl:-mt-18 xl:mb-20"
     >
-      <div className="mx-auto max-w-5xl px-3 sm:px-4 md:px-6">
-        <div className="rounded-xl sm:rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 md:px-8">
+        <div className="rounded-2xl sm:rounded-3xl bg-white shadow-2xl ring-1 ring-black/10 border border-gray-100">
           {/* Tabs */}
           <div className="px-3 sm:px-4 pt-2 sm:pt-3">
             <Tabs value={active} onValueChange={(v) => setActive(v as typeof active)}>
@@ -161,11 +159,6 @@ export default function SearchBar({ defaultTab = "Rent", onSearch }: SearchBarPr
               {/* City ComboBox */}
               <div className="flex-1">
                 <ComboBox options={cityOptions} placeholder="Select City" onChange={setCity} />
-              </div>
-
-              {/* Town / Sector ComboBox */}
-              <div className="flex-1">
-                <ComboBox options={sectorOptions} placeholder="Select Town / Sector" onChange={setSector} />
               </div>
 
               {/* Search Button */}

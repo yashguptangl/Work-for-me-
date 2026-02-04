@@ -1,29 +1,41 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cron from "node-cron";
 import userAuth from "./routes/user.auth";
 import ownerAuth from "./routes/owner.auth";
 import ownerListing from "./routes/owner.listing";
+import ownerVerification from "./routes/owner.verification";
 import searchRoutes from "./routes/user.searches";
 import userDash from "./routes/user.dashboard";
 import contactRouter from "./routes/contact"
 import locationRouter from "./routes/location";
 import tempVerification from "./routes/temp.Mobile.verify";
+import verificationCron from "./routes/verification.cron";
+import rentAgreementRoutes from "./routes/rent.agreement";
+import publicOwnerRouter from "./routes/owner.public";
+import { runVerificationMaintenance } from "./utils/verificationCron";
 
 const app = express();
 
 app.use(express.json());
 
-app.use(cors());
+app.use(cors({
+        origin: "*",
+        credentials: true,
+}));
 app.use("/api/v1/user/auth" , userAuth);
 app.use("/api/v1/owner/auth" , ownerAuth);
 app.use("/api/v1/owner/property" , ownerListing);
+app.use("/api/v1/owner/verification" , ownerVerification);
 app.use("/api/v1/search" , searchRoutes);
 app.use("/api/v1/user" , userDash);
 app.use("/api/v1/contact", contactRouter)
 app.use("/api/v1/near" , locationRouter);
 app.use("/api/v1" , tempVerification);
-
+app.use("/api/v1/cron" , verificationCron);
+app.use("/api/v1/rent-agreements", rentAgreementRoutes);
+app.use("/api/v1/owner", publicOwnerRouter);
 
 
 app.get("/api/health" , (req, res) =>{
@@ -31,6 +43,14 @@ app.get("/api/health" , (req, res) =>{
 })
 
 
-app.listen(3001 , () =>{
+app.listen(3001 , "0.0.0.0" , () =>{
     console.log("Server is running on port 3001");
+    
+    // Setup automatic cron job - Runs daily at 2 AM
+    cron.schedule('0 2 * * *', async () => {
+        console.log('🕐 Running daily verification maintenance at 2 AM...');
+        await runVerificationMaintenance();
+    });
+    
+    console.log('✅ Verification cron job scheduled - Runs daily at 2 AM');
 });

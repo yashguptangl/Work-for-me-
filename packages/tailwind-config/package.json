@@ -1,7 +1,14 @@
 {
-  "name": "tailwind-config",
+  "name": "@repo/tailwind-config",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "main": "tailwind.config.js",
+  "exports": {
+    "./tailwind.config": "./tailwind.config.js",
+    "./tailwind.config.js": "./tailwind.config.js",
+    "./postcss.config": "./postcss.config.js",
+    "./postcss.config.js": "./postcss.config.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

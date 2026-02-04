@@ -33,11 +33,11 @@ export const searchListings = async (req: Request, res: Response) => {
         });
     }
 
-    // city and townSector are REQUIRED, but looking_for is optional if allResidential is true
-    if (!city || !townSector) {
+    // city is REQUIRED, but townSector is optional now
+    if (!city) {
         return res.status(400).json({ 
             success: false, 
-            message: "city and townSector are required" 
+            message: "city is required" 
         });
     }
 
@@ -53,10 +53,14 @@ export const searchListings = async (req: Request, res: Response) => {
         // Build the where clause
         const whereClause: any = {
             city,
-            townSector,
             isAvailable: true,
             isDraft: false,
         };
+
+        // Add townSector filter only if provided
+        if (townSector) {
+            whereClause.townSector = townSector;
+        }
 
         // Add listing type filter
         if (listingType) {
@@ -77,7 +81,7 @@ export const searchListings = async (req: Request, res: Response) => {
         // Get images for all listings
         const imageCategories = ["first", "second", "third", "fourth", "fifth"];
         const listingsWithImages = await Promise.all(
-            listings.map(async (listing) => {
+            listings.map(async (listing: any) => {
                 const imageUrls = await getListingImageUrls(listing.id, imageCategories);
                 const rentValue = listing.listingType === 'RENT' ? parseFloat(listing.rent || "0") : 0;
                 const saleValue = listing.listingType === 'SALE' ? parseFloat(listing.salePrice || "0") : 0;
@@ -244,7 +248,7 @@ export const filterProperties = async (req: Request, res: Response) => {
         // Get images and calculate values
         const imageCategories = ["first", "second", "third", "fourth", "fifth"];
         const listingsWithImages = await Promise.all(
-            listings.map(async (listing) => {
+            listings.map(async (listing: any) => {
                 const imageUrls = await getListingImageUrls(listing.id, imageCategories);
                 const rentValue = listing.listingType === 'RENT' ? parseFloat(listing.rent || "0") : 0;
                 const saleValue = listing.listingType === 'SALE' ? parseFloat(listing.salePrice || "0") : 0;
@@ -269,6 +273,65 @@ export const filterProperties = async (req: Request, res: Response) => {
         res.status(500).json({ 
             success: false,
             error: "Internal server error" 
+        });
+    }
+};
+
+// Get available townsectors/areas for a city that have listings
+export const getAvailableTownSectors = async (req: Request, res: Response) => {
+    const { city, listingType } = req.query;
+
+    if (!city) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "city is required" 
+        });
+    }
+
+    // Validate listing type
+    if (listingType && !['RENT', 'SALE'].includes(listingType as string)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid listing type. Must be RENT or SALE"
+        });
+    }
+
+    try {
+        const where: any = {
+            city: city as string,
+            isAvailable: true,
+            isDraft: false,
+        };
+
+        // Add listing type filter if provided
+        if (listingType) {
+            where.listingType = listingType;
+        }
+
+        // Get distinct townsectors that have available listings in this city
+        const properties = await prisma.property.findMany({
+            where,
+            select: {
+                townSector: true,
+            },
+            distinct: ['townSector'],
+        });
+
+        const townSectors = properties
+            .map(p => p.townSector)
+            .filter(Boolean)
+            .sort();
+
+        return res.json({ 
+            success: true, 
+            message: `Found ${townSectors.length} areas with available listings in ${city}`,
+            data: townSectors 
+        });
+    } catch (error) {
+        console.error("Error fetching available townsectors:", error);
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal server error" 
         });
     }
 };
@@ -328,7 +391,7 @@ export const searchNearMe = async (req: Request, res: Response) => {
         });
 
         // Filter by distance
-        const nearbyProperties = allProperties.filter((property) => {
+        const nearbyProperties = allProperties.filter((property: any) => {
             if (!property.latitude || !property.longitude) return false;
             
             const distance = getDistance(
@@ -344,7 +407,7 @@ export const searchNearMe = async (req: Request, res: Response) => {
         // Get images for nearby properties
         const imageCategories = ["first", "second", "third", "fourth", "fifth"];
         const propertiesWithImages = await Promise.all(
-            nearbyProperties.map(async (property) => {
+            nearbyProperties.map(async (property: any) => {
                 const imageUrls = await getListingImageUrls(property.id, imageCategories);
                 const rentValue = property.listingType === 'RENT' ? parseFloat(property.rent || "0") : 0;
                 const saleValue = property.listingType === 'SALE' ? parseFloat(property.salePrice || "0") : 0;

@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from "next/navigation";
 import { Button } from '../../components/ui/button';
-import { Home, Search, User, Menu, X, Shield, Building2, Heart, LogOut } from 'lucide-react';
+import { Home, Search, User, Menu, X, Shield, Building2, Heart, LogOut, FileText } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
+import NavImage from '@/assets/logo_with_name.png'
+import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +31,7 @@ const Navbar = () => {
   const baseNavItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'About Us', path: '/about', icon: Shield },
+    { name: 'Pricing', path: '/pricing', icon: Building2 },
     { name: 'Guides'  , path: '/guides', icon: Search },
   ];
 
@@ -70,16 +73,15 @@ const Navbar = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             {/* Site Logo */}
-            <img src="/icon.png" alt="Roomlocate" className="w-8 h-8 rounded-lg object-contain" />
-            <div>
-              <span className="text-lg sm:text-xl font-bold text-gradient">Roomlocate</span>
-              <p className="text-xs text-muted-foreground hidden sm:block">Verified Rooms. Local Trust.</p>
+            <div className="flex items-center">
+              <Image src={NavImage.src} alt="roomkarts" className="h-10 sm:h-12 w-auto object-contain" width={200} height={50} />
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {/* Home first */}
+
             <Link
               href="/"
               className={`nav-link ${isActive('/') ? 'text-primary' : 'text-foreground'}`}
@@ -105,10 +107,12 @@ const Navbar = () => {
               <div className="w-24 sm:w-32 h-10 bg-gray-100 animate-pulse rounded"></div>
             ) : !user ? (
               <>
-                <Link href="/signup?type=owner" className="hidden sm:inline-block">
-                  <Button variant="outline" className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 text-xs sm:text-sm px-2 sm:px-3">
-                    Post Property Free
-                  </Button>
+                <Link href="/login?type=owner" className="hidden sm:inline-block">
+                  <motion.div whileTap={{ scale: 0.96 }} whileHover={{ scale: 1.02 }}>
+                    <Button variant="outline" className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-purple-100 hover:border-blue-300 text-xs sm:text-sm px-2 sm:px-3 font-medium shadow-sm">
+                      Post Property Free
+                    </Button>
+                  </motion.div>
                 </Link>
                 <Link href="/login">
                   <motion.div whileTap={{ scale: 0.96 }} whileHover={{ scale: 1.02 }}>
@@ -169,6 +173,12 @@ const Navbar = () => {
                           Add Property
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="bg-white text-black hover:bg-gray-100">
+                        <Link href="/rent-agreements" className="text-black">
+                          <FileText className="mr-2 h-4 w-4" />
+                          Rent Agreements
+                        </Link>
+                      </DropdownMenuItem>
                     </>
                   )}
                   
@@ -197,6 +207,12 @@ const Navbar = () => {
                         <Link href="/user/dashboard" className="text-black">
                           <Heart className="mr-2 h-4 w-4" />
                           My Wishlist
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="bg-white text-black hover:bg-gray-100">
+                        <Link href="/rent-agreements" className="text-black">
+                          <FileText className="mr-2 h-4 w-4" />
+                          Rent Agreements
                         </Link>
                       </DropdownMenuItem>
                     </>

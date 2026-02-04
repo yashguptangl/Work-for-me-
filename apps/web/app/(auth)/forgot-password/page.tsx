@@ -11,7 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 
 const ForgotPasswordContent = () => {
   const searchParams = useSearchParams();
-  const userType = searchParams.get('type') || 'seeker';
+  const userType = searchParams?.get('type') || 'seeker';
   const [currentStep, setCurrentStep] = useState(1); // 1: Mobile, 2: OTP + New Password, 3: Success
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
@@ -21,6 +21,12 @@ const ForgotPasswordContent = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { forgotPassword, resetPassword, isLoading } = useAuth();
   const [countdown, setCountdown] = useState(0);
+
+  // Handle mobile input to only allow 10 digits
+  const handleMobileChange = (value: string) => {
+    const numericValue = value.replace(/\D/g, '').slice(0, 10);
+    setMobile(numericValue);
+  };
 
   const switchRole = (newRole: string) => {
     window.location.href = `/forgot-password?type=${newRole}`;
@@ -35,6 +41,13 @@ const ForgotPasswordContent = () => {
 
   const handleMobileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Validate mobile number
+    if (mobile.length !== 10) {
+      alert('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    
     const success = await forgotPassword(mobile, userType as 'seeker' | 'owner');
     if (success) {
       setCurrentStep(2);
@@ -82,7 +95,7 @@ const ForgotPasswordContent = () => {
               </p>
             </CardHeader>
             <CardContent>
-              <Link href="/login">
+              <Link href={`/login?type=${userType}`}>
                 <Button className="w-full btn-hero">
                   Sign In with New Password
                 </Button>
@@ -104,7 +117,7 @@ const ForgotPasswordContent = () => {
               Reset Your Password
             </h1>
             <p className="text-muted-foreground">
-              We've sent a 6-digit code to <strong>{mobile}</strong>
+              We&apos;ve sent a 6-digit code to <strong>{mobile}</strong>
             </p>
           </div>
           <Card className="border-0 shadow-lg">
@@ -174,7 +187,18 @@ const ForgotPasswordContent = () => {
                 <Label htmlFor="mobile">Mobile Number</Label>
                 <div className="relative">
                   <Smartphone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input id="mobile" type="tel" placeholder="9876543210" className="pl-10" value={mobile} onChange={(e) => setMobile(e.target.value)} required />
+                  <Input 
+                    id="mobile" 
+                    type="tel" 
+                    placeholder="Enter 10-digit WhatsApp Number" 
+                    className="pl-10" 
+                    value={mobile} 
+                    onChange={(e) => handleMobileChange(e.target.value)} 
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                    minLength={10}
+                    required 
+                  />
                 </div>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
@@ -182,7 +206,7 @@ const ForgotPasswordContent = () => {
               </Button>
             </form>
             <div className="mt-6 text-center">
-              <Link href="/login"><Button variant="ghost" className="text-sm"><ArrowLeft className="w-4 h-4 mr-2" />Back to Login</Button></Link>
+              <Link href={`/login?type=${userType}`}><Button variant="ghost" className="text-sm"><ArrowLeft className="w-4 h-4 mr-2" />Back to Login</Button></Link>
             </div>
           </CardContent>
         </Card>

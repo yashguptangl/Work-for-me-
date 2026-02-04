@@ -238,3 +238,29 @@ export const ownerContactFullDetails = async (req: Request , res: Response) =>{
         });
     }
 };
+
+
+export const generalContacts = async (req: Request , res: Response) =>{
+    try {
+        const {name , email , phone , message} = req.body;
+
+        const contacts = await prisma.contactUs.create({
+            data: {
+                name,
+                email,
+                phone,
+                message
+            }
+        });
+        res.json({
+            success: true,
+            data: contacts
+        });
+    } catch (error) {
+        console.error("Error fetching owner contacts:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch contacts"
+        });
+    }
+};

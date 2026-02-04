@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Heart, MapPin, MessageSquare, Trash2, Loader2 } from 'lucide-react'
+import { Heart, MapPin, MessageSquare, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import heroProperty from '@/assets/hero-property.jpg'
 
@@ -20,15 +20,8 @@ export default function UserDashboard() {
     isLoading,
     removeFromWishlist,
     deleteContact,
-    loadWishlist,
-    loadContacts
   } = useUserData()
 
-  // Debug logging
-  console.log('UserDashboard - User:', user);
-  console.log('UserDashboard - Wishlist:', wishlist);
-  console.log('UserDashboard - Contacts:', contacts);
-  console.log('UserDashboard - IsLoading:', isLoading);
 
   // Protect route - only seeker role can access
   useEffect(() => {
@@ -103,6 +96,18 @@ export default function UserDashboard() {
               </div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-2 md:mt-0">
+              <Button 
+                onClick={() => {
+                  const contactSection = document.getElementById('contact-section');
+                  contactSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                variant="outline"
+                className="w-full sm:w-auto text-[10px] sm:text-xs md:text-sm h-8 sm:h-9 md:hidden" 
+                size="sm"
+              >
+                <MessageSquare className="h-3 w-3 mr-1.5" />
+                Jump to Contacts
+              </Button>
               <Button onClick={() => router.push('/properties')} className="w-full sm:w-auto text-[10px] sm:text-xs md:text-sm h-8 sm:h-9" size="sm">
                 Browse homes
               </Button>
@@ -142,11 +147,6 @@ export default function UserDashboard() {
                   <Heart className="mx-auto mb-2 sm:mb-3 h-6 w-6 sm:h-8 sm:w-8 text-rose-300" />
                   <p className="font-medium text-xs sm:text-sm md:text-base text-slate-600">No saved homes yet</p>
                   <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm">Shortlist listings to keep them handy here.</p>
-                  <div className="mt-2 space-y-1">
-                    <p className="text-[9px] sm:text-[10px] text-slate-400">User ID: {user?.id || 'Not found'}</p>
-                    <p className="text-[9px] sm:text-[10px] text-slate-400">Auth: {typeof window !== 'undefined' && localStorage.getItem('authToken') ? 'Yes' : 'No'}</p>
-                    <p className="text-[9px] sm:text-[10px] text-slate-400">Wishlist items: {wishlist?.length || 0}</p>
-                  </div>
                   <Button className="mt-3 sm:mt-4 md:mt-5 text-[10px] sm:text-xs md:text-sm h-8 sm:h-9" onClick={() => router.push('/properties')}>
                     Discover properties
                   </Button>
@@ -156,15 +156,14 @@ export default function UserDashboard() {
                   <div key={item.id} className="flex gap-2 sm:gap-3 md:gap-4 rounded-xl border border-slate-100 bg-white p-2 sm:p-3 md:p-4 shadow-sm transition hover:border-slate-200">
                     <div className="h-14 w-16 sm:h-16 sm:w-20 md:h-20 md:w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 relative">
                       <Image 
-                        src={item.property.image || heroProperty} 
+                        src={item.property.image || heroProperty.src} 
                         alt={item.property.title} 
+
+
+
                         fill
                         className="object-cover"
                         sizes="(max-width: 640px) 64px, (max-width: 768px) 80px, 96px"
-                        onError={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          img.src = heroProperty.src || '/placeholder.svg';
-                        }}
                         unoptimized
                       />
                     </div>
@@ -208,13 +207,13 @@ export default function UserDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border border-slate-200 bg-white shadow-sm">
+          <Card id="contact-section" className="border border-slate-200 bg-white shadow-sm scroll-mt-20">
             <CardHeader className="p-2 sm:p-3 md:p-4 lg:p-6">
               <CardTitle className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg text-slate-900">
                 <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-sky-500" /> Recent contacts
               </CardTitle>
               <CardDescription className="text-[10px] sm:text-xs md:text-sm text-slate-500">
-                Keep a record of the owners and agents you've reached out to.
+                Keep a record of the owners and agents you&apos;ve reached out to.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 sm:space-y-3 md:space-y-4 p-2 sm:p-3 md:p-4 lg:p-6">

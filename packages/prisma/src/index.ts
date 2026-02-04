@@ -1,2 +1,23 @@
-import { PrismaClient } from '@prisma/client';
-export const prisma = new PrismaClient();
+import { PrismaClient, AdminRole } from '@prisma/client';
+
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'error', 'warn']
+        : ['error'],
+  });
+};
+
+export const prisma = globalThis.prisma ?? prismaClientSingleton();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.prisma = prisma;
+}
+
+export { AdminRole, PrismaClient };
+export * from '@prisma/client';

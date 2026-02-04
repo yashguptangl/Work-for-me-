@@ -30,13 +30,39 @@ const OwnerSignupForm = () => {
   const { signup, isLoading } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'phone') {
+      // Only allow numeric input and limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.firstName || !formData.lastName || !formData.phone || !formData.email || !formData.password) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    // Validate mobile number
+    if (formData.phone.length !== 10) {
+      alert('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
+    // Validate password
+    if (formData.password.length < 6) {
+      alert('Password must be at least 6 characters long');
       return;
     }
 
@@ -59,7 +85,7 @@ const OwnerSignupForm = () => {
           <div className="bg-success-light border border-success/20 rounded-lg p-3 mb-4">
             <div className="flex items-center space-x-2">
               <Shield className="w-4 h-4 text-success" />
-              <p className="text-sm font-medium text-success">Your identity helps build trust on Roomlocate</p>
+              <p className="text-sm font-medium text-success">Your identity helps build trust on roomkarts</p>
             </div>
           </div>
 
@@ -101,14 +127,17 @@ const OwnerSignupForm = () => {
               <Input
                 id="phone"
                 type="tel"
-                placeholder="+91 98765 43210"
+                placeholder="10-digit mobile number"
                 className="pl-10"
                 value={formData.phone}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('phone', e.target.value)}
+                pattern="[0-9]{10}"
+                maxLength={10}
+                minLength={10}
                 required
               />
             </div>
-            <p className="text-xs text-muted-foreground">We'll send an OTP for verification</p>
+            <p className="text-xs text-muted-foreground">We&apos;ll send an OTP for verification</p>
           </div>
 
           {/* Email */}

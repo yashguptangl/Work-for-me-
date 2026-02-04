@@ -9,7 +9,7 @@ import OwnerSignupForm from '@/components/auth/OwnerSignupForm';
 
 const SignupContent = () => {
   const searchParams = useSearchParams();
-  const role = (searchParams.get('role') || searchParams.get('type') || 'seeker') as 'seeker' | 'owner';
+  const role = (searchParams?.get('role') || searchParams?.get('type') || 'seeker') as 'seeker' | 'owner';
 
   const switchRole = (newRole: string) => {
     window.location.href = `/signup?role=${newRole}`;
@@ -18,7 +18,7 @@ const SignupContent = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* SEO Meta */}
-      <title>Sign Up - Roomlocate | Create Your Account</title>
+      <title>Sign Up - roomkarts | Create Your Account</title>
 
       <div className="w-full max-w-md">
         {/* Header */}

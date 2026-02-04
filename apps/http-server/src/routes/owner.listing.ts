@@ -16,7 +16,7 @@ import {
 
 ownerListing.post("/create", ownerAuth, createPropertyController);
 ownerListing.get("/my-properties", ownerAuth, getOwnerPropertiesController);
-ownerListing.get("/:id", getPropertyByIdController); // Add this for single property fetch
+ownerListing.get("/:id", ownerAuth, getPropertyByIdController); // Auth required for single property fetch
 ownerListing.post("/upload-images", ownerAuth, uploadImagesController);
 ownerListing.patch("/toggle-availability/:id", ownerAuth, togglePropertyAvailabilityController);
 ownerListing.patch("/publish/:id", ownerAuth, publishPropertyController); // New publish route

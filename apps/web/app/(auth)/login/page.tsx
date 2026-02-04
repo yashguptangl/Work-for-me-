@@ -18,7 +18,7 @@ import { useAuth } from '@/context/AuthContext';
 
 const LoginContent = () => {
   const searchParams = useSearchParams();
-  const userType = searchParams.get('type') || 'seeker';
+  const userType = searchParams?.get('type') || 'seeker';
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     mobile: '',
@@ -27,7 +27,13 @@ const LoginContent = () => {
   const { login } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'mobile') {
+      // Only allow numeric input and limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const switchRole = (newRole: string) => {
@@ -36,6 +42,18 @@ const LoginContent = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Validate mobile number
+    if (formData.mobile.length !== 10) {
+      alert('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    
+    if (!formData.password || formData.password.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+    
     try {
       await login(formData.mobile, formData.password, userType as 'seeker' | 'owner');
     } catch (error) {
@@ -46,7 +64,7 @@ const LoginContent = () => {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center p-4">
       {/* SEO Meta */}
-      <title>Login - Roomlocate | Sign In to Your Account</title>
+      <title>Login - roomkarts | Sign In to Your Account</title>
 
       <div className="w-full max-w-md">
         {/* Header */}
@@ -92,16 +110,19 @@ const LoginContent = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="mobile">Mobile Number</Label>
+                <Label htmlFor="mobile">WhatsApp Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="mobile"
                     type="tel"
-                    placeholder="Enter your mobile number"
+                    placeholder="Enter 10-digit WhatsApp Number"
                     className="pl-10"
                     value={formData.mobile}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('mobile', e.target.value)}
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                    minLength={10}
                     required
                   />
                 </div>
@@ -141,7 +162,7 @@ const LoginContent = () => {
                     Remember me
                   </Label>
                 </div>
-                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                <Link href={`/forgot-password?type=${userType}`} className="text-sm text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -153,7 +174,7 @@ const LoginContent = () => {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href={`/signup?type=${userType}`} className="text-primary hover:underline font-medium">
                   Sign up
                 </Link>

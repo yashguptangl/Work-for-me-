@@ -19,7 +19,6 @@ import {
   CheckCircle
 } from 'lucide-react';
 import heroProperty from '@/assets/hero-property.jpg';
-import pgRoom from '@/assets/pg-room.jpg';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -162,7 +161,9 @@ const PropertyDetail = () => {
       const arr: string[] = JSON.parse(localStorage.getItem(key) || '[]');
       const next = [String(property.id), ...arr.filter((x) => x !== String(property.id))].slice(0, 12);
       localStorage.setItem(key, JSON.stringify(next));
-    } catch {}
+    } catch {
+      // Ignore localStorage errors
+    }
   }, [property]);
 
   const amenityIcons: Record<string, any> = {
@@ -222,7 +223,7 @@ const PropertyDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <title>{property.title} - Roomlocate | Verified PG in {property.location}</title>
+      <title>{property.title} - roomkarts | Verified PG in {property.location}</title>
 
       <AnimatePresence mode="wait">
       <motion.div
@@ -237,20 +238,21 @@ const PropertyDetail = () => {
           {/* Left: Image slider */}
           <div className="lg:col-span-2">
             <motion.div className="relative h-[250px] sm:h-[360px] md:h-[480px] rounded-lg overflow-hidden border [transform-style:preserve-3d]" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-              <Image
-                key={idx}
-                src={images[idx]}
-                alt={property.title}
-                fill
-                className="object-cover cursor-zoom-in"
-                priority={false}
+              <div
+                className="w-full h-full cursor-zoom-in"
                 onClick={() => { setLightboxIdx(idx); setLightboxOpen(true); }}
-                onError={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  img.src = heroProperty.src || '/placeholder.svg';
-                }}
-                unoptimized
-              />
+                style={{ position: 'relative' }}
+              >
+                <Image
+                  key={idx}
+                  src={images[idx]}
+                  alt={property.title}
+                  fill
+                  className="object-cover"
+                  priority={false}
+                  unoptimized
+                />
+              </div>
               <div className="absolute inset-0 bg-black/10" />
               {/* type badges */}
               <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1.5">
@@ -270,7 +272,9 @@ const PropertyDetail = () => {
                   className={`glass-effect ${isWishlisted ? 'bg-red-500 hover:bg-red-600 text-white' : ''}`}
                   onClick={async () => {
                     if (!user) {
-                      try { localStorage.setItem('rd_redirect', `/properties/${id}`); } catch {}
+                      try { localStorage.setItem('rd_redirect', `/properties/${id}`); } catch {
+                        // Ignore localStorage errors
+                      }
                       router.push('/login?type=seeker');
                       return;
                     }
@@ -395,13 +399,13 @@ const PropertyDetail = () => {
                         </div>
                         <p className="text-sm text-green-700">You can now view the phone number</p>
                       </div>
-                      <Button className="w-full btn-hero" asChild>
+                      <Button className="w-full btn-hero text-xs sm:text-sm" asChild>
                         <a href={`tel:${property.ownerPhone}`}>
-                          <Phone className="w-4 h-4 mr-2" />
+                          <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                           {property.ownerPhone}
                         </a>
                       </Button>
-                      <Button variant="outline" className="w-full" asChild>
+                      <Button variant="outline" className="w-full text-xs sm:text-sm" asChild>
                         <a
                           href={`https://wa.me/91${property.ownerPhone}?text=Hi, I'm interested in your property: ${property.title}`}
                           target="_blank"
@@ -434,15 +438,19 @@ const PropertyDetail = () => {
                         </div>
                       )}
                       <Button
-                        className="w-full btn-hero"
+                        className="w-full btn-hero text-xs sm:text-sm"
                         onClick={async () => {
                           if (!user) {
-                            try { localStorage.setItem('rd_redirect', `/properties/${id}`); } catch {}
+                            try { localStorage.setItem('rd_redirect', `/properties/${id}`); } catch {
+                              // Ignore localStorage errors
+                            }
                             router.push('/login?type=seeker');
                             return;
                           }
                           if (user.role === 'OWNER') {
-                            try { localStorage.setItem('rd_redirect', `/properties/${id}`); } catch {}
+                            try { localStorage.setItem('rd_redirect', `/properties/${id}`); } catch {
+                              // Ignore localStorage errors
+                            }
                             toast.info('Please login with a user account to contact properties');
                             router.push('/login?type=seeker');
                             return;
@@ -471,12 +479,12 @@ const PropertyDetail = () => {
                       </Button>
                       {!user && (
                         <p className="text-xs text-center text-muted-foreground">
-                          You'll be redirected back here after login
+                          You&apos;ll be redirected back here after login
                         </p>
                       )}
                       {user && user.role === 'OWNER' && (
                         <p className="text-xs text-center text-muted-foreground">
-                          You'll be redirected back here after login
+                          You&apos;ll be redirected back here after login
                         </p>
                       )}
                     </>
@@ -551,7 +559,7 @@ const PropertyDetail = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }}>
               <Card>
                 <CardContent className="p-4 sm:p-6">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">What's Nearby</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">What&apos;s Nearby</h2>
                   <div className="grid grid-cols-1 gap-3 sm:gap-4">
                     {property.nearbyPlaces.map((place: { name: string; distance: string; type: string }, index: number) => (
                       <motion.div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg" initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
@@ -576,123 +584,123 @@ const PropertyDetail = () => {
                     {property.bhk && (
                       <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
                         <Home className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
-                        <div>
-                          <div className="font-medium text-sm sm:text-base">{property.bhk} BHK</div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.bhk} BHK</div>
                           <div className="text-xs sm:text-sm text-muted-foreground">Configuration</div>
                         </div>
                       </div>
                     )}
                     {property.furnished && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.furnished}</div>
-                          <div className="text-sm text-muted-foreground">Furnishing</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.furnished}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Furnishing</div>
                         </div>
                       </div>
                     )}
                     
                     {/* RENT-specific fields */}
                     {property.listingType === 'RENT' && property.accommodation && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <Users className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.accommodation}</div>
-                          <div className="text-sm text-muted-foreground">Accommodation</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.accommodation}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Accommodation</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'RENT' && property.security && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <Shield className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">₹{property.security}</div>
-                          <div className="text-sm text-muted-foreground">Security Deposit</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">₹{property.security}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Security Deposit</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'RENT' && property.maintenance && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">₹{property.maintenance}</div>
-                          <div className="text-sm text-muted-foreground">Maintenance</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">₹{property.maintenance}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Maintenance</div>
                         </div>
                       </div>
                     )}
                     
                     {/* SALE-specific fields */}
                     {property.listingType === 'SALE' && property.carpetArea && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <Home className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.carpetArea} sq.ft</div>
-                          <div className="text-sm text-muted-foreground">Carpet Area</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <Home className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.carpetArea} sq.ft</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Carpet Area</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'SALE' && property.builtUpArea && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <Home className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.builtUpArea} sq.ft</div>
-                          <div className="text-sm text-muted-foreground">Built-up Area</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <Home className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.builtUpArea} sq.ft</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Built-up Area</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'SALE' && property.pricePerSqft && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">₹{property.pricePerSqft}</div>
-                          <div className="text-sm text-muted-foreground">Price/sq.ft</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">₹{property.pricePerSqft}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Price/sq.ft</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'SALE' && property.propertyAge && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <Calendar className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.propertyAge}</div>
-                          <div className="text-sm text-muted-foreground">Property Age</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.propertyAge}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Property Age</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'SALE' && property.floorNumber && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <Home className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">Floor {property.floorNumber}</div>
-                          <div className="text-sm text-muted-foreground">Floor Number</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <Home className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">Floor {property.floorNumber}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Floor Number</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'SALE' && property.facingDirection && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.facingDirection}</div>
-                          <div className="text-sm text-muted-foreground">Facing</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.facingDirection}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Facing</div>
                         </div>
                       </div>
                     )}
                     {property.listingType === 'SALE' && property.possession && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.possession}</div>
-                          <div className="text-sm text-muted-foreground">Possession</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.possession}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Possession</div>
                         </div>
                       </div>
                     )}
                     
                     {/* Common fields */}
                     {property.parking && (
-                      <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                        <Car className="w-5 h-5 text-primary" />
-                        <div>
-                          <div className="font-medium">{property.parking}</div>
-                          <div className="text-sm text-muted-foreground">Parking</div>
+                      <div className="flex items-center space-x-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+                        <Car className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm sm:text-base truncate">{property.parking}</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">Parking</div>
                         </div>
                       </div>
                     )}
@@ -768,10 +776,6 @@ const PropertyDetail = () => {
                 alt={`${property.title}-full`} 
                 fill 
                 className="object-contain"
-                onError={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  img.src = heroProperty.src || '/placeholder.svg';
-                }}
                 unoptimized
               />
               {images.length > 1 && (

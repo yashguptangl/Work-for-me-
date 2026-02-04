@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { type AuthUser } from "../../hooks/useAuth";
 
 type Props = {
@@ -13,7 +12,6 @@ type Props = {
 };
 
 export default function ProfileDropdown({ user, onClose, onLogout }: Props) {
-  const router = useRouter();
   const ref = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(true);
 
@@ -37,9 +35,6 @@ export default function ProfileDropdown({ user, onClose, onLogout }: Props) {
       document.removeEventListener("mousedown", onClick);
     };
   }, [onClose]);
-
-  const displayName = user.name || user.email.split("@")[0] || "User";
-  const roleLabel = user.role === "OWNER" ? "Owner" : "Master User";
   const dashboardHref = user.role === 'OWNER' ? '/owner/dashboard' : '/user/dashboard';
   const dashboardLabel = 'Dashboard';
   const profileHref = '/profile';

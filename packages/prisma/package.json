@@ -1,22 +1,35 @@
 {
   "name": "@repo/db",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "./prisma": "./src/index.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@repo/typescript-config": "*"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./prisma": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "seed:admin": "tsx src/seedAdmin.ts",
+    "seed": "tsx prisma/seed.ts"
   },
-  "description": "",
   "dependencies": {
     "@prisma/client": "^5.19.1",
+    "bcrypt": "^6.0.0",
     "prisma": "^5.19.1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/bcrypt": "^6.0.0",
+    "typescript": "^5.0.0"
   }
 }

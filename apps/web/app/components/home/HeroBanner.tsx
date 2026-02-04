@@ -6,13 +6,15 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import heroFallback from "@/assets/hero-property.jpg";
 
+// import type { StaticImageData } from "next/image";
+
 export type HeroBannerProps = {
   title: string;
   subtitle: string;
   location: string;
   rating: number;
   priceLabel: string;
-  imageSrc?: any; // Next/Image static import or url string
+  imageSrc?: string;
   onExplore?: () => void;
   onListProperty?: () => void;
 };
@@ -23,7 +25,7 @@ export default function HeroBanner({
   location,
   rating,
   priceLabel,
-  imageSrc = heroFallback,
+  imageSrc = heroFallback as unknown as string,
   onExplore,
   onListProperty,
 }: HeroBannerProps) {

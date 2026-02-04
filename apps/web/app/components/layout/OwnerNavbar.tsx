@@ -7,6 +7,8 @@ import { Home, User, Menu, X, Briefcase, Plus, Bell, LogOut, Settings, MessageSq
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
+import Image from 'next/image';
+import NavImage from '@/assets/logo.png'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,7 +60,7 @@ const OwnerNavbar = () => {
         <div className={`flex items-center justify-between transition-all ${isScrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-16'}`}>
           {/* Logo */}
           <Link href="/owner/dashboard" className="flex items-center space-x-2">
-            <img src="/icon.png" alt="Roomlocate" className="w-8 h-8 rounded-lg object-contain" />
+            <Image src={NavImage.src} alt="roomkarts" width={32} height={32} className="w-8 h-8 rounded-lg object-contain" />
             <div>
               <span className="text-lg sm:text-xl font-bold text-gradient">Owner Dashboard</span>
             </div>

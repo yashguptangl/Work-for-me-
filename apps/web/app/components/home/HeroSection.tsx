@@ -33,7 +33,7 @@ const HeroSection = () => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   return (
     <section className="relative min-h-[600px] overflow-hidden">

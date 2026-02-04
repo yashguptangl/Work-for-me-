@@ -61,3 +61,24 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
         return res.status(401).json({ message: 'Invalid token' });
     }
 }
+
+// Optional authentication - allows both authenticated and unauthenticated users
+export function optionalAuth(req: Request, res: Response, next: NextFunction) {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+        // No token provided, continue without user context
+        req.user = undefined;
+        return next();
+    }
+
+    try {
+        const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;
+        req.user = payload;
+        next();
+    } catch (err) {
+        // Invalid token, continue without user context
+        req.user = undefined;
+        next();
+    }
+}

@@ -227,6 +227,14 @@ const ListPropertyPageContent = () => {
   };
 
   const validateForm = (): boolean => {
+    // Check for exactly 5 images
+    if (images.length !== 5) {
+      toast.error("Image Required", {
+        description: `Please upload exactly 5 images. Currently uploaded: ${images.length}`,
+      });
+      return false;
+    }
+
     // Common required fields
     const commonRequired = [
       'title', 'description', 'propertyType', 'address', 'city', 
@@ -353,7 +361,7 @@ const ListPropertyPageContent = () => {
         setOtpSent(true);
         setOtp('');
         toast.success("✅ OTP Sent!", {
-          description: `Verification code sent to ${form.whatsappNo}${response.data?.otp ? ` (Dev OTP: ${response.data.otp})` : ''}`
+          description: `OTP has been sent successfully to your WhatsApp Number ${form.whatsappNo}${response.data?.otp ? ` (Dev OTP: ${response.data.otp})` : ''}`
         });
       } else {
         toast.error("Error", {
@@ -456,13 +464,13 @@ const ListPropertyPageContent = () => {
         const category = imageCategories[index];
         if (!category) {
           console.error(`❌ No category for index ${index}`);
-          return null;
+          return { success: false, category, error: 'No category' };
         }
         const presignedUrl = presignedUrls[category];
         
         if (!presignedUrl) {
           console.error(`❌ No presigned URL for ${category}`);
-          return null;
+          return { success: false, category, error: 'No presigned URL' };
         }
 
         try {
@@ -486,6 +494,7 @@ const ListPropertyPageContent = () => {
             headers: { 
               'Content-Type': 'image/jpeg',
             },
+            mode: 'cors',
           });
 
           console.log(`📦 S3 Response for ${category}:`, {
@@ -502,17 +511,39 @@ const ListPropertyPageContent = () => {
           }
           
           console.log(`✅ ${category} image uploaded successfully`);
-          return true;
+          return { success: true, category };
         } catch (error: any) {
-          console.error(`❌ Error uploading ${category}:`, error);
-          throw error;
+          console.error(`❌ Error uploading ${category}:`, {
+            message: error?.message || 'Unknown error',
+            name: error?.name,
+            stack: error?.stack,
+            error: error
+          });
+          return { success: false, category, error: error?.message || 'Upload failed' };
         }
       });
 
-      await Promise.all(uploadPromises);
-      console.log('✅ All images uploaded successfully');
+      const results = await Promise.all(uploadPromises);
+      const successCount = results.filter(r => r && r.success).length;
+      const failedCount = results.filter(r => r && !r.success).length;
       
-      return { success: true };
+      console.log(`📊 Upload results: ${successCount} succeeded, ${failedCount} failed`);
+      
+      if (failedCount > 0) {
+        const failedCategories = results
+          .filter(r => r && !r.success)
+          .map(r => r?.category)
+          .join(', ');
+        console.warn(`⚠️ Some images failed to upload: ${failedCategories}`);
+      }
+      
+      if (successCount === 0) {
+        throw new Error('All images failed to upload. Please check your internet connection and S3 CORS configuration.');
+      }
+      
+      console.log(`✅ ${successCount}/${imageFiles.slice(0, 5).length} images uploaded successfully`);
+      
+      return { success: true, uploaded: successCount, failed: failedCount };
     } catch (error) {
       console.error('❌ Image upload error:', error);
       throw error;
@@ -578,33 +609,45 @@ const ListPropertyPageContent = () => {
         console.log(`📤 Starting upload for ${images.length} images...`);
         
         try {
-          await uploadPropertyImages(propertyId, images);
-          console.log('✅ All images uploaded successfully');
+          const uploadResult = await uploadPropertyImages(propertyId, images);
+          console.log('📊 Upload result:', uploadResult);
+          
+          if (uploadResult.uploaded > 0) {
+            console.log(`✅ ${uploadResult.uploaded} images uploaded successfully`);
 
-          // Publish property after successful upload
-          console.log('🚀 Publishing property...');
-          try {
-            const publishResponse = await apiClient.publishProperty(propertyId);
-            console.log('📦 Publish response:', publishResponse);
-            
-            if (publishResponse.success) {
-              console.log('✅ Property published successfully');
-              toast.success("🎉 Property Listed Successfully!", {
-                description: `Your property is now live and visible to potential tenants!`
+            // Publish property after successful upload
+            console.log('🚀 Publishing property...');
+            try {
+              const publishResponse = await apiClient.publishProperty(propertyId);
+              console.log('📦 Publish response:', publishResponse);
+              
+              if (publishResponse.success) {
+                console.log('✅ Property published successfully');
+                if (uploadResult.failed > 0) {
+                  toast.success("🎉 Property Listed!", {
+                    description: `Property is live! ${uploadResult.uploaded}/${images.length} images uploaded successfully.`
+                  });
+                } else {
+                  toast.success("🎉 Property Listed Successfully!", {
+                    description: `Your property is now live with all ${uploadResult.uploaded} images!`
+                  });
+                }
+              } else {
+                throw new Error(publishResponse.message || 'Publish failed');
+              }
+            } catch (publishErr: any) {
+              console.warn('⚠️ Auto-publish failed:', publishErr);
+              toast.success("📸 Images Uploaded!", {
+                description: `${uploadResult.uploaded} images uploaded. Property saved as draft. Publish from dashboard.`
               });
-            } else {
-              throw new Error(publishResponse.message || 'Publish failed');
             }
-          } catch (publishErr: any) {
-            console.warn('⚠️ Auto-publish failed:', publishErr);
-            toast.success("📸 Images Uploaded Successfully!", {
-              description: "Property saved as draft. Please publish from dashboard when ready."
-            });
+          } else {
+            throw new Error('All images failed to upload');
           }
         } catch (uploadError: any) {
           console.error('❌ Image upload error:', uploadError);
-          toast.error("Property Saved as Draft", {
-            description: `Property saved but images failed to upload: ${uploadError.message}`
+          toast.warning("Property Saved as Draft", {
+            description: `Property saved but images couldn't upload. Add images from dashboard later.`
           });
         }
       } else {
@@ -748,6 +791,7 @@ const ListPropertyPageContent = () => {
                       <ComboBox
                         options={mainCities}
                         placeholder="Select city"
+                        value={form.city}
                         onChange={(value) =>
                         setForm(prev => ({ ...prev, city: value, townSector: "" }))
                         }
@@ -758,6 +802,7 @@ const ListPropertyPageContent = () => {
                       <Label htmlFor="townSector">Town/Sector *</Label>
                       <ComboBox
                         options={form.city ? availableAreas : []}
+                        value={form.townSector}
                         placeholder={
                         form.city
                           ? availableAreas.length > 0
@@ -1212,9 +1257,17 @@ const ListPropertyPageContent = () => {
                         <Label htmlFor="whatsappNo">WhatsApp Number *</Label>
                         <Input
                           id="whatsappNo"
-                          placeholder="10-digit mobile number"
+                          type="tel"
+                          placeholder="10-digit WhatsApp Number"
                           value={form.whatsappNo}
-                          onChange={(e) => setForm({...form, whatsappNo: e.target.value})}
+                          onChange={(e) => {
+                            const numericValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+                            setForm({...form, whatsappNo: numericValue});
+                          }}
+                          pattern="[0-9]{10}"
+                          maxLength={10}
+                          minLength={10}
+                          required
                         />
                       </div>
                     </div>
@@ -1262,7 +1315,7 @@ const ListPropertyPageContent = () => {
                               id="otp"
                               type="text"
                               maxLength={4}
-                              placeholder="4-digit OTP"
+                              placeholder="Enter OTP sent to your WhatsApp Number"
                               value={otp}
                               onChange={(e) => {
                                 const value = e.target.value.split('').filter(char => char >= '0' && char <= '9').join('');

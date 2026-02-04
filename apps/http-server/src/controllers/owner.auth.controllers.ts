@@ -114,9 +114,9 @@ export const ownerLoginController = async (req: Request, res: Response): Promise
     });
 
     if (!owner) {
-      res.status(401).json({
+      res.status(404).json({
         success: false,
-        message: 'Invalid phone or password'
+        message: 'Account not found. Please create your account first.'
       });
       return;
     }
@@ -127,7 +127,7 @@ export const ownerLoginController = async (req: Request, res: Response): Promise
     if (!isPasswordValid) {
       res.status(401).json({
         success: false,
-        message: 'Invalid phone or password'
+        message: 'Invalid password'
       });
       return;
     }
@@ -444,8 +444,7 @@ export const ownerForgotPasswordController = async (req: Request, res: Response)
 
     const owner = await prisma.owner.findUnique({ where: { phone } });
     if (!owner) {
-      // Do not reveal if the user exists for security reasons
-      res.status(200).json({ success: true, message: 'If an account exists, an OTP has been sent.' });
+      res.status(404).json({ success: false, message: 'No owner account found with this number.' });
       return;
     }
 

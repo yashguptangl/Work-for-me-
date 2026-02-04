@@ -1,0 +1,8 @@
+{
+  "prisma.prismaPath": "${workspaceFolder}/node_modules/prisma",
+  "prisma.fileWatcher": true,
+  "prisma.trace.server": "off",
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
+}

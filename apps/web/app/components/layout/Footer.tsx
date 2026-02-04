@@ -1,18 +1,21 @@
 "use client";
 import Link from 'next/link';
-import { Home, Instagram, Twitter, Youtube, Facebook } from 'lucide-react';
+import { Home, Instagram, Youtube, Facebook, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   const quickLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Properties', path: '/properties' },
-    { name: 'About Us', path: '/about' },
     { name: 'Guides', path: '/guides' },
+    { name: 'About Us', path: '/about' },
     { name: 'List Property', path: '/list-property' },
+    { name: 'Rent Agreement Generator', path: '/rent-agreement' },
+    { name: 'Terms & Conditions', path: '/terms-condition' },
+    { name: 'Privacy Policy', path: '/privacy-policy' },
+    { name: 'Refund Policy', path: '/refund-policy' },
+    { name: 'Contact Us', path: '/contact' },
   ];
 
   const socialLinks = [
-    { name: 'Twitter/X', icon: Twitter, url: 'https://x.com' },
+    { name: 'LinkedIn', icon: Linkedin, url: 'https://x.com' },
     { name: 'YouTube', icon: Youtube, url: 'https://youtube.com' },
     { name: 'Facebook', icon: Facebook, url: 'https://facebook.com' },
     { name: 'Instagram', icon: Instagram, url: 'https://instagram.com' },
@@ -47,7 +50,7 @@ const Footer = () => {
                 <Home className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">Roomlocate</h3>
+                <h3 className="text-lg font-bold">roomkarts</h3>
                 <p className="text-xs text-white/70">Verified Rooms. Local Trust.</p>
               </div>
             </div>
@@ -81,7 +84,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/10 mt-10 pt-6 text-center text-white/70 text-sm">
-          © 2025 Roomlocate. All rights reserved.
+          © 2025 roomkarts. All rights reserved.
         </div>
       </div>
     </footer>

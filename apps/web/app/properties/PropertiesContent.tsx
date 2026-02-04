@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import PropertyCard from '@/components/properties/PropertyCard';
-import ListPropertyCTA from '@/components/ui/ListPropertyCTA';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +11,6 @@ import ComboBox from '@/components/ui/ComboBox';
 import { citiesData } from '@/lib/cities';
 import { 
   Search, 
-  SlidersHorizontal, 
   MapPin, 
   Grid3X3, 
   List,
@@ -22,10 +20,10 @@ import {
   Navigation
 } from 'lucide-react';
 import heroProperty from '@/assets/hero-property.jpg';
-import pgRoom from '@/assets/pg-room.jpg';
 import { apiClient, Property as ApiProperty } from '@/lib/api';
 import { useUserData } from '@/hooks/useUserData';
 import { toast } from '@/components/ui/sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const PropertiesContent = () => {
   const searchParams = useSearchParams();
@@ -50,14 +48,41 @@ const PropertiesContent = () => {
     gender: '',
     amenities: [] as string[]
   });
+  const [tempFilters, setTempFilters] = useState(filters);
+  const [availableTownSectors, setAvailableTownSectors] = useState<string[]>([]);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [tempSelectedAreas, setTempSelectedAreas] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 9;
 
-  // Get cities and areas data
+  // Get cities data
   const mainCities = Object.keys(citiesData);
-  const availableAreas = filters.city && citiesData[filters.city] 
-    ? (citiesData[filters.city] ?? [])
-    : [];
+
+  // Fetch available townsectors when temp city changes
+  useEffect(() => {
+    const fetchAvailableAreas = async () => {
+      if (!tempFilters.city) {
+        setAvailableTownSectors([]);
+        return;
+      }
+
+      try {
+        const listingType = searchParams?.get('listingType') as 'RENT' | 'SALE' | null;
+        const response = await apiClient.getAvailableAreas(tempFilters.city, listingType || undefined);
+        
+        if (response.success && response.data) {
+          setAvailableTownSectors(response.data);
+        } else {
+          setAvailableTownSectors([]);
+        }
+      } catch (error) {
+        console.error('Error fetching available areas:', error);
+        setAvailableTownSectors([]);
+      }
+    };
+
+    fetchAvailableAreas();
+  }, [tempFilters.city, searchParams]);
 
   // Load properties from API with optional override filters
   const loadProperties = async (overrideFilters?: Partial<typeof filters>, skipEmptyModal: boolean = false) => {
@@ -66,33 +91,60 @@ const PropertiesContent = () => {
     try {
       // Use override filters if provided, otherwise use current filters, then fall back to URL params
       const currentFilters = overrideFilters || filters;
-      const lookingFor = currentFilters.propertyType || searchParams.get('looking_for') || searchParams.get('propertyType');
-      const allResidential = searchParams.get('allResidential');
-      const city = currentFilters.city || searchParams.get('city');
-      const townSector = currentFilters.townSector || searchParams.get('townSector') || searchParams.get('area');
-      const listingType = searchParams.get('listingType') as 'RENT' | 'SALE' | null;
+      const lookingFor = currentFilters.propertyType || searchParams?.get('looking_for') || searchParams?.get('propertyType');
+      const allResidential = searchParams?.get('allResidential');
+      const city = currentFilters.city || searchParams?.get('city');
+      const listingType = searchParams?.get('listingType') as 'RENT' | 'SALE' | null;
 
-      const searchParamsObj: any = {
-        city: city,
-        townSector: townSector
-      };
+      // If multiple areas are selected, we need to fetch for each and combine results
+      let allProperties: any[] = [];
 
-      // Add listing type to search params
-      if (listingType) {
-        searchParamsObj.listingType = listingType;
+      if (selectedAreas.length > 0) {
+        // Fetch properties for each selected area
+        const promises = selectedAreas.map(async (area) => {
+          const searchParamsObj: any = {
+            city: city,
+            townSector: area
+          };
+
+          if (listingType) {
+            searchParamsObj.listingType = listingType;
+          }
+
+          if (!allResidential && lookingFor && lookingFor !== 'all') {
+            searchParamsObj.looking_for = lookingFor;
+          } else if (allResidential || !lookingFor || lookingFor === '' || lookingFor === 'all') {
+            searchParamsObj.allResidential = 'true';
+          }
+
+          const response = await apiClient.searchProperties(searchParamsObj);
+          return response.success && response.data ? response.data : [];
+        });
+
+        const results = await Promise.all(promises);
+        allProperties = results.flat();
+      } else {
+        // No areas selected, search by city only
+        const searchParamsObj: any = {
+          city: city
+        };
+
+        if (listingType) {
+          searchParamsObj.listingType = listingType;
+        }
+
+        if (!allResidential && lookingFor && lookingFor !== 'all') {
+          searchParamsObj.looking_for = lookingFor;
+        } else if (allResidential || !lookingFor || lookingFor === '' || lookingFor === 'all') {
+          searchParamsObj.allResidential = 'true';
+        }
+
+        const response = await apiClient.searchProperties(searchParamsObj);
+        allProperties = response.success && response.data ? response.data : [];
       }
-
-      // Only add looking_for if not searching all residential
-      if (!allResidential && lookingFor && lookingFor !== 'all') {
-        searchParamsObj.looking_for = lookingFor;
-      } else if (allResidential || !lookingFor || lookingFor === '' || lookingFor === 'all') {
-        searchParamsObj.allResidential = 'true';
-      }
-
-      const response = await apiClient.searchProperties(searchParamsObj);
       
-      if (response.success && response.data) {
-        const formattedProperties = response.data.map((prop: ApiProperty) => {
+      if (allProperties.length > 0) {
+        const formattedProperties = allProperties.map((prop: ApiProperty) => {
           // Parse gender preference
           const rawGender = (prop.genderPreference || '').toLowerCase();
           let gender: 'male' | 'female' | 'coed' = 'coed';
@@ -139,7 +191,7 @@ const PropertiesContent = () => {
         setSkipAutoModal(false); // Reset skip flag when properties found
       } else {
         setProperties([]);
-        setError(response.message || 'No properties found');
+        setError('No properties found');
         // Show toast for empty results with actionable message
         if (!skipEmptyModal) {
           toast.warning('🗘️ No Properties Found', {
@@ -160,12 +212,11 @@ const PropertiesContent = () => {
   // Load properties when component mounts or filters change
   useEffect(() => {
     // Check if Near Me params are present in URL
-    const nearMe = searchParams.get('nearMe');
-    const latitude = searchParams.get('latitude');
-    const longitude = searchParams.get('longitude');
-    const propertyType = searchParams.get('propertyType');
-    const listingType = searchParams.get('listingType') as 'RENT' | 'SALE' | null;
-
+    const nearMe = searchParams?.get('nearMe');
+    const latitude = searchParams?.get('latitude');
+    const longitude = searchParams?.get('longitude');
+    const propertyType = searchParams?.get('propertyType');
+    const listingType = searchParams?.get('listingType') as 'RENT' | 'SALE' | null;
     if (nearMe === 'true' && latitude && longitude) {
       // Trigger Near Me search with coordinates from URL
       console.log('🌍 Near Me detected from URL params', { latitude, longitude, propertyType, listingType });
@@ -247,7 +298,7 @@ const PropertiesContent = () => {
         setShowEmptyModal(false);
         
         // Only show toast for manual Near Me search (not URL params)
-        if (!searchParams.get('nearMe')) {
+        if (!searchParams?.get('nearMe')) {
           toast.success(`📍 Found ${formattedProperties.length} Properties Near You!`, {
             description: `Properties within 10km radius of your location`
           });
@@ -351,21 +402,22 @@ const PropertiesContent = () => {
   }, [displayedProperties, page, pageSize]);
 
   const Pagination = () => (
-    <div className="flex items-center justify-between gap-4">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
         Showing {Math.min((page - 1) * pageSize + 1, displayedProperties.length)}-
         {Math.min(page * pageSize, displayedProperties.length)} of {displayedProperties.length}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 order-1 sm:order-2">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={page === 1}
+          className="h-9 px-3 text-xs sm:text-sm"
         >
           Previous
         </Button>
-        <span className="text-sm">
+        <span className="text-xs sm:text-sm font-medium min-w-[80px] text-center">
           Page {page} / {totalPages}
         </span>
         <Button
@@ -373,6 +425,7 @@ const PropertiesContent = () => {
           size="sm"
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           disabled={page === totalPages}
+          className="h-9 px-3 text-xs sm:text-sm"
         >
           Next
         </Button>
@@ -389,6 +442,14 @@ const PropertiesContent = () => {
     }));
   };
 
+  const toggleArea = (area: string) => {
+    setSelectedAreas(prev => 
+      prev.includes(area)
+        ? prev.filter(a => a !== area)
+        : [...prev, area]
+    );
+  };
+
   const clearFilters = async () => {
     const clearedFilters = {
       city: '',
@@ -399,6 +460,9 @@ const PropertiesContent = () => {
       amenities: [] as string[]
     };
     setFilters(clearedFilters);
+    setTempFilters(clearedFilters);
+    setSelectedAreas([]);
+    setTempSelectedAreas([]);
     setSkipAutoModal(true); // Prevent auto-showing modal
     
     toast.info('🧹 Filters Cleared', {
@@ -408,13 +472,24 @@ const PropertiesContent = () => {
     await loadProperties(clearedFilters, true); // Skip empty modal when clearing
   };
 
-  const handleAddToWishlist = async (propertyId: string) => {
-    await addToWishlist(propertyId);
+  const applyFilters = () => {
+    setFilters(tempFilters);
+    setSelectedAreas(tempSelectedAreas);
+    setSkipAutoModal(false);
+    setShowFilters(false); // Close filter on mobile
+    loadProperties(tempFilters, false);
+    toast.success('✅ Filters Applied', {
+      description: 'Searching with your selected filters'
+    });
   };
 
-  const handleContactOwner = async (propertyId: string) => {
-    await createContact(propertyId, "Interested in this property");
-  };
+  // const handleAddToWishlist = async (propertyId: string) => {
+  //   await addToWishlist(propertyId);
+  // };
+
+  // const handleContactOwner = async (propertyId: string) => {
+  //   await createContact(propertyId, "Interested in this property");
+  // };
 
   const handleNearMe = async () => {
     console.log('🔍 Near Me button clicked from properties page');
@@ -450,28 +525,77 @@ const PropertiesContent = () => {
     );
   };
 
+  // Lock body scroll on mobile when filter is open, unlock on close
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isMobile = window.innerWidth < 1024;
+    if (showFilters && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    // Clean up on unmount or filter close
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showFilters]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* SEO Meta */}
-      <title>Properties - Roomlocate | Find PGs, Rooms & Flats</title>
+      <title>Properties - roomkarts | Find PGs, Rooms & Flats</title>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <aside className={`lg:w-80 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-            <div className="bg-card rounded-lg border p-6 sticky top-24">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold">Filters</h2>
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  Clear All
-                </Button>
-              </div>
-
-              <div className="space-y-6">
-                {/* Near Me Button */}
-                <div>
-                  <Button 
-                    className="w-full" 
+          {/* MOBILE FILTER SIDEBAR (framer-motion, scrollable content) */}
+          <AnimatePresence>
+            {showFilters && (
+              <>
+                {/* Overlay for mobile */}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                  onClick={() => setShowFilters(false)}
+                />
+                {/* Filter Panel (mobile only) */}
+                <motion.div
+                  initial={{ x: '-100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '-100%' }}
+                  transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                  className="fixed top-[64px] left-0 bottom-0 w-[90vw] max-w-xs bg-white shadow-xl border flex flex-col overflow-hidden z-50 block lg:hidden"
+                  style={{ right: 'auto' }}
+                >
+                  {/* Fixed Header */}
+                  <div className="flex-shrink-0 bg-white z-10 flex items-center justify-between p-4 md:p-6 pb-4 border-b border-gray-200">
+                    <h2 className="text-lg md:text-xl font-bold text-gray-900">Filters</h2>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 shrink-0">
+                        Clear All
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="p-1 h-8 w-8 shrink-0"
+                        onClick={() => setShowFilters(false)}
+                      >
+                        <X className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Scrollable Content (mobile only) */}
+                  <div
+                    className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 lg:space-y-0"
+                    style={{ maxHeight: 'calc(100dvh - 4rem)' }}
+                  >
+                  {/* Near Me Button */}
+                  <div>
+                    <Button 
+                      className="w-full shadow-sm" 
                     variant={nearMeActive ? "default" : "outline"}
                     onClick={() => {
                       console.log('🔘 Near Me button clicked!', { nearMeActive });
@@ -493,84 +617,90 @@ const PropertiesContent = () => {
 
                 {/* City */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">City</label>
+                  <label className="text-sm font-semibold mb-2 block text-gray-900">City</label>
                   <ComboBox
                     options={mainCities}
                     placeholder="Select city"
-                    onChange={(value) => setFilters(prev => ({ ...prev, city: value, townSector: "" }))}
+                    value={tempFilters.city}
+                    onChange={(value) => {
+                      setTempFilters(prev => ({ ...prev, city: value, townSector: "" }));
+                      setTempSelectedAreas([]); // Clear selected areas when city changes
+                    }}
                   />
                 </div>
 
-                {/* Town/Sector */}
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Town/Sector</label>
-                  <ComboBox
-                    options={availableAreas}
-                    placeholder={
-                      filters.city
-                        ? availableAreas.length > 0
-                          ? "Select area"
-                          : "No areas available"
-                        : "Choose city first"
-                    }
-                    onChange={(value) => setFilters(prev => ({ ...prev, townSector: value }))}
-                  />
-                </div>
+                {/* Town/Sector - Show as checkboxes when city is selected */}
+                {tempFilters.city && availableTownSectors.length > 0 && (
+                  <div>
+                    <label className="text-sm font-semibold mb-2 block text-gray-900">Areas/Sectors ({availableTownSectors.length} available)</label>
+                    <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50">
+                      {availableTownSectors.map((area) => (
+                        <label key={`area-${area}`} className="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded-md transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={tempSelectedAreas.includes(area)}
+                            onChange={() => {
+                              setTempSelectedAreas(prev => 
+                                prev.includes(area)
+                                  ? prev.filter(a => a !== area)
+                                  : [...prev, area]
+                              );
+                            }}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                          />
+                          <span className="text-sm text-gray-700">{area}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Property Type */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Property Type</label>
-                  <Select value={filters.propertyType} onValueChange={(value: string) => {
-                    setFilters({...filters, propertyType: value});
-                    // Auto-search when property type changes
-                    setTimeout(() => loadProperties(), 100);
+                  <label className="text-sm font-semibold mb-2 block text-gray-900">Property Type</label>
+                  <Select value={tempFilters.propertyType || 'all'} onValueChange={(value: string) => {
+                    setTempFilters({...tempFilters, propertyType: value === 'all' ? '' : value});
                   }}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
+                      <SelectValue placeholder="All Residentials" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Residentials</SelectItem>
                       <SelectItem value="PG">PG</SelectItem>
                       <SelectItem value="ROOM">Room</SelectItem>
                       <SelectItem value="FLAT">Flat</SelectItem>
+                      <SelectItem value="HOUSE">House</SelectItem>
+                      <SelectItem value="VILLA">Villa</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Search Button */}
+                {/* Apply Filters Button */}
                 <div className="space-y-2">
                   <Button 
                     className="w-full" 
-                    onClick={() => {
-                      setSkipAutoModal(false); // Reset skip flag when user manually searches
-                      loadProperties();
-                    }}
-                    disabled={loading}
+                    onClick={applyFilters}
+                    disabled={loading || !tempFilters.city}
                   >
                     <Search className="w-4 h-4 mr-2" />
-                    {loading ? 'Searching...' : 'Search Properties'}
-                  </Button>
-                  
-                  {/* Near Me Button */}
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={handleNearMe}
-                    disabled={loading}
-                  >
-                    <Navigation className="w-4 h-4 mr-2" />
-                    Find Near Me
+                    {loading ? 'Applying...' : 'Apply Filters'}
                   </Button>
                 </div>
 
                 {/* Budget */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Budget Range</label>
-                  <Select value={filters.budget} onValueChange={(value: string) => setFilters({...filters, budget: value})}>
+                  <label className="text-sm font-semibold mb-2 block text-gray-900">Budget Range</label>
+                  <Select value={filters.budget || 'any'} onValueChange={(value: string) => {
+                    const newBudget = value === 'any' ? '' : value;
+                    const newFilters = {...filters, budget: newBudget};
+                    setFilters(newFilters);
+                    setTempFilters(newFilters);
+                  }}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select budget" />
+                      <SelectValue placeholder="Any Budget" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="any">Any Budget</SelectItem>
                       <SelectItem value="0-5000">Under ₹5,000</SelectItem>
                       <SelectItem value="5000-10000">₹5,000 - ₹10,000</SelectItem>
                       <SelectItem value="10000-15000">₹10,000 - ₹15,000</SelectItem>
@@ -582,12 +712,18 @@ const PropertiesContent = () => {
 
                 {/* Gender Preference */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Gender Preference</label>
-                  <Select value={filters.gender} onValueChange={(value: string) => setFilters({...filters, gender: value})}>
+                  <label className="text-sm font-semibold mb-2 block text-gray-900">Gender Preference</label>
+                  <Select value={filters.gender || 'any'} onValueChange={(value: string) => {
+                    const newGender = value === 'any' ? '' : value;
+                    const newFilters = {...filters, gender: newGender};
+                    setFilters(newFilters);
+                    setTempFilters(newFilters);
+                  }}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select preference" />
+                      <SelectValue placeholder="Any Gender" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="any">Any Gender</SelectItem>
                       <SelectItem value="male">Boys Only</SelectItem>
                       <SelectItem value="female">Girls Only</SelectItem>
                       <SelectItem value="coed">Co-ed</SelectItem>
@@ -597,112 +733,281 @@ const PropertiesContent = () => {
 
                 {/* Amenities */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Amenities</label>
+                  <label className="text-sm font-semibold mb-2 block text-gray-900">Amenities</label>
                   <div className="grid grid-cols-2 gap-2">
                     {amenitiesList.map((amenity) => (
                       <Badge
-                        key={amenity}
+                        key={`amenity-${amenity}`}
                         variant={filters.amenities.includes(amenity) ? "default" : "outline"}
                         className="cursor-pointer justify-center py-2"
-                        onClick={() => toggleAmenity(amenity)}
+                        onClick={() => {
+                          const newAmenities = filters.amenities.includes(amenity)
+                            ? filters.amenities.filter(a => a !== amenity)
+                            : [...filters.amenities, amenity];
+                          const newFilters = {...filters, amenities: newAmenities};
+                          setFilters(newFilters);
+                          setTempFilters(newFilters);
+                        }}
                       >
                         {amenity}
                       </Badge>
                     ))}
                   </div>
                 </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+          {/* DESKTOP FILTER SIDEBAR (sticky, never scrollable, full filter UI) */}
+          <aside className="hidden lg:flex lg:sticky top-24 bottom-auto left-0 w-80 bg-white shadow-none rounded-xl border border-gray-200 flex-col overflow-hidden self-start">
+            {/* Fixed Header */}
+            <div className="flex-shrink-0 bg-white z-10 flex items-center justify-between p-4 md:p-6 pb-4 border-b border-gray-200">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">Filters</h2>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 shrink-0">
+                  Clear All
+                </Button>
+              </div>
+            </div>
+            {/* Full Filter Content (desktop only, not scrollable) */}
+            <div className="flex-1 p-4 md:p-6">
+              {/* Near Me Button */}
+              <div>
+                <Button 
+                  className="w-full shadow-sm" 
+                  variant={nearMeActive ? "default" : "outline"}
+                  onClick={() => {
+                    if (nearMeActive) {
+                      setNearMeActive(false);
+                      setSelectedNearMeType('');
+                      loadProperties();
+                    } else {
+                      handleNearMe();
+                    }
+                  }}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {nearMeActive ? `Showing ${selectedNearMeType || 'All'} Near Me` : 'Search Near Me (10km)'}
+                </Button>
+              </div>
+              {/* City */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block text-gray-900">City</label>
+                <ComboBox
+                  options={mainCities}
+                  placeholder="Select city"
+                  value={tempFilters.city}
+                  onChange={(value) => {
+                    setTempFilters(prev => ({ ...prev, city: value, townSector: "" }));
+                    setTempSelectedAreas([]); // Clear selected areas when city changes
+                  }}
+                />
+              </div>
+              {/* Town/Sector - Show as checkboxes when city is selected */}
+              {tempFilters.city && availableTownSectors.length > 0 && (
+                <div>
+                  <label className="text-sm font-semibold mb-2 block text-gray-900">Areas/Sectors ({availableTownSectors.length} available)</label>
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50">
+                    {availableTownSectors.map((area) => (
+                      <label key={`area-${area}`} className="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded-md transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={tempSelectedAreas.includes(area)}
+                          onChange={() => {
+                            setTempSelectedAreas(prev => 
+                              prev.includes(area)
+                                ? prev.filter(a => a !== area)
+                                : [...prev, area]
+                            );
+                          }}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span className="text-sm text-gray-700">{area}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Property Type */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block text-gray-900">Property Type</label>
+                <Select value={tempFilters.propertyType || 'all'} onValueChange={(value: string) => {
+                  setTempFilters({...tempFilters, propertyType: value === 'all' ? '' : value});
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Residentials" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Residentials</SelectItem>
+                    <SelectItem value="PG">PG</SelectItem>
+                    <SelectItem value="ROOM">Room</SelectItem>
+                    <SelectItem value="FLAT">Flat</SelectItem>
+                    <SelectItem value="HOUSE">House</SelectItem>
+                    <SelectItem value="VILLA">Villa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Apply Filters Button */}
+              <div className="space-y-2">
+                <Button 
+                  className="w-full" 
+                  onClick={applyFilters}
+                  disabled={loading || !tempFilters.city}
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  {loading ? 'Applying...' : 'Apply Filters'}
+                </Button>
+              </div>
+              {/* Budget */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block text-gray-900">Budget Range</label>
+                <Select value={filters.budget || 'any'} onValueChange={(value: string) => {
+                  const newBudget = value === 'any' ? '' : value;
+                  const newFilters = {...filters, budget: newBudget};
+                  setFilters(newFilters);
+                  setTempFilters(newFilters);
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any Budget" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any Budget</SelectItem>
+                    <SelectItem value="0-5000">Under ₹5,000</SelectItem>
+                    <SelectItem value="5000-10000">₹5,000 - ₹10,000</SelectItem>
+                    <SelectItem value="10000-15000">₹10,000 - ₹15,000</SelectItem>
+                    <SelectItem value="15000-25000">₹15,000 - ₹25,000</SelectItem>
+                    <SelectItem value="25000+">Above ₹25,000</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Gender Preference */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block text-gray-900">Gender Preference</label>
+                <Select value={filters.gender || 'any'} onValueChange={(value: string) => {
+                  const newGender = value === 'any' ? '' : value;
+                  const newFilters = {...filters, gender: newGender};
+                  setFilters(newFilters);
+                  setTempFilters(newFilters);
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any Gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any Gender</SelectItem>
+                    <SelectItem value="male">Boys Only</SelectItem>
+                    <SelectItem value="female">Girls Only</SelectItem>
+                    <SelectItem value="coed">Co-ed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Amenities */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block text-gray-900">Amenities</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {amenitiesList.map((amenity) => (
+                    <Badge
+                      key={`amenity-${amenity}`}
+                      variant={filters.amenities.includes(amenity) ? "default" : "outline"}
+                      className="cursor-pointer justify-center py-2"
+                      onClick={() => {
+                        const newAmenities = filters.amenities.includes(amenity)
+                          ? filters.amenities.filter(a => a !== amenity)
+                          : [...filters.amenities, amenity];
+                        const newFilters = {...filters, amenities: newAmenities};
+                        setFilters(newFilters);
+                        setTempFilters(newFilters);
+                      }}
+                    >
+                      {amenity}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </aside>
+          </AnimatePresence>
 
           {/* Main Content */}
           <main className="flex-1">
             {/* Top Bar */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden"
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters
-                </Button>
-                <p className="text-muted-foreground">
+            <div className="flex flex-col gap-1.5 mb-1">
+              {/* First Row - Filters, View Mode and Count */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="lg:hidden"
+                  >
+                    <Filter className="w-4 h-4 mr-2" />
+                    Filters
+                  </Button>
+                  
+                  {/* View mode buttons - hidden on mobile */}
+                  <div className="hidden md:flex items-center gap-2">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                    >
+                      <Grid3X3 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                    >
+                      <List className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <p className="text-sm md:text-base text-muted-foreground">
                   Showing {displayedProperties.length} properties
                 </p>
-                {error && (
-                  <p className="text-red-500 text-sm">{error}</p>
-                )}
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-
-                {/* Sort */}
-                <div className="hidden md:block w-44">
-                  <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as any)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="relevance">Relevance</SelectItem>
-                      <SelectItem value="price_low">Price: Low to High</SelectItem>
-                      <SelectItem value="price_high">Price: High to Low</SelectItem>
-                      <SelectItem value="rating">Top Rated</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* Second Row - Sort */}
+              <div className="flex items-center justify-end gap-2">
+                <Select value={sortBy} onValueChange={(v: string) => setSortBy(v as any)}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="relevance">Relevance</SelectItem>
+                    <SelectItem value="price_low">Price: Low to High</SelectItem>
+                    <SelectItem value="price_high">Price: High to Low</SelectItem>
+                    <SelectItem value="rating">Top Rated</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
 
-            {/* Pagination top */}
-            {paginatedProperties.length > 0 && (
-              <div className="mb-4">
-                <Pagination />
-              </div>
-            )}
-
-            {/* Quick Filters */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              <Badge className="cursor-pointer" variant="outline" onClick={() => setFilters({ ...filters, budget: '0-10000' })}>Budget ≤ ₹10k</Badge>
-              <Badge className="cursor-pointer" variant="outline" onClick={() => setFilters({ ...filters, propertyType: 'pg' })}>PG</Badge>
-              <Badge className="cursor-pointer" variant="outline" onClick={() => setFilters({ ...filters, propertyType: 'room' })}>Room</Badge>
-              <Badge className="cursor-pointer" variant="outline" onClick={() => setFilters({ ...filters, propertyType: 'flat' })}>Flat</Badge>
-              <Badge className="cursor-pointer" variant="outline" onClick={() => setFilters({ ...filters, amenities: Array.from(new Set([...filters.amenities, 'WiFi'])) })}>WiFi</Badge>
-              <Badge className="cursor-pointer" variant="outline" onClick={() => setFilters({ ...filters, gender: 'coed' })}>Co-ed</Badge>
+              {/* Error Message */}
+              {error && (
+                <p className="text-red-500 text-sm">{error}</p>
+              )}
             </div>
 
             {/* Active Filters */}
-            {Object.values(filters).some(f => f && (Array.isArray(f) ? f.length > 0 : true)) && (
+            {(Object.values(filters).some(f => f && (Array.isArray(f) ? f.length > 0 : true)) || selectedAreas.length > 0) && (
               <div className="flex flex-wrap items-center gap-2 mb-6">
                 <span className="text-sm text-muted-foreground">Active filters:</span>
                 {filters.city && (
                   <Badge variant="secondary" className="flex items-center gap-1">
                     City: {filters.city}
-                    <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters({...filters, city: ''})} />
+                    <X className="w-3 h-3 cursor-pointer" onClick={() => {
+                      setFilters({...filters, city: ''});
+                      setSelectedAreas([]);
+                    }} />
                   </Badge>
                 )}
-                {filters.townSector && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Town/Sector: {filters.townSector}
-                    <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters({...filters, townSector: ''})} />
+                {selectedAreas.map((area) => (
+                  <Badge key={area} variant="secondary" className="flex items-center gap-1">
+                    Area: {area}
+                    <X className="w-3 h-3 cursor-pointer" onClick={() => toggleArea(area)} />
                   </Badge>
-                )}
+                ))}
                 {filters.propertyType && (
                   <Badge variant="secondary" className="flex items-center gap-1">
                     Type: {filters.propertyType.toUpperCase()}
@@ -761,7 +1066,7 @@ const PropertiesContent = () => {
                 ? 'grid md:grid-cols-2 xl:grid-cols-3 gap-6 md:[perspective:1000px]'
                 : 'space-y-6'
               }>
-                {paginatedProperties.map((property, idx) => (
+                {paginatedProperties.map((property) => (
                   <div key={property.id}>
                     <PropertyCard property={property} />
                   </div>
@@ -771,7 +1076,7 @@ const PropertiesContent = () => {
 
             {/* Pagination bottom */}
             {paginatedProperties.length > 0 && (
-              <div className="mt-10">
+              <div className="mt-8 pt-6 border-t">
                 <Pagination />
               </div>
             )}
@@ -799,7 +1104,7 @@ const PropertiesContent = () => {
               </div>
               <CardTitle className="text-2xl text-black">Properties Available Soon</CardTitle>
               <CardDescription className="text-base text-gray-700">
-                No properties found matching your search criteria. We're constantly adding new listings!
+                No properties found matching your search criteria. We&apos;re constantly adding new listings!
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">

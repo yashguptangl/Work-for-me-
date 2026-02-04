@@ -7,14 +7,16 @@ import Autocomplete from "@mui/material/Autocomplete";
 interface ComboBoxProps {
   options: string[];
   placeholder: string;
+  value?: string;
   onChange?: (value: string) => void;
 }
 
-export default function ComboBox({ options, placeholder, onChange }: ComboBoxProps) {
+export default function ComboBox({ options, placeholder, value, onChange }: ComboBoxProps) {
   return (
     <Autocomplete
       disablePortal
       options={options}
+      value={value || null}
       onChange={(event, newValue) => onChange?.(newValue || "")}
       sx={{
         width: "100%",

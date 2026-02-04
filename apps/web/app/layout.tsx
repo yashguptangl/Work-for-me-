@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Roomlocate",
+  title: "roomkarts",
   description: "Verified Rooms. Local Trust.",
   icons: {
     icon: "/favicon.ico",

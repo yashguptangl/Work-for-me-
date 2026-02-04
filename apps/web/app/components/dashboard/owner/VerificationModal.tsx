@@ -84,9 +84,9 @@ export default function VerificationModal({
         description: "Verification request created successfully"
       });
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Error", {
-        description: error.message || "Failed to create verification request"
+        description: "Failed to create verification request"
       });
     } finally {
       setIsProcessing(false);
@@ -180,7 +180,7 @@ export default function VerificationModal({
               </div>
               <div className="flex items-center gap-1 text-2xl font-bold text-violet-700">
                 <IndianRupee className="h-5 w-5" />
-                <span>149</span>
+                <span>199</span>
               </div>
             </div>
           )}

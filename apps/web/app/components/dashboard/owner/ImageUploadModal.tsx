@@ -68,6 +68,15 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
       return;
     }
 
+    if (images.length !== 5) {
+      toast({
+        title: "Incomplete images",
+        description: `Please upload exactly 5 images. Currently uploaded: ${images.length}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setUploading(true);
     try {
       // Get owner data from localStorage
@@ -130,7 +139,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
             }
             console.log(`${category} image uploaded successfully`);
             return true;
-          } catch (error: any) {
+          } catch (error) {
             console.error(`Error uploading ${category}:`, error);
             throw error;
           }
@@ -159,11 +168,11 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
         
         onSuccess();
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload images",
+        description:"Failed to upload images",
         variant: "destructive",
       });
     } finally {

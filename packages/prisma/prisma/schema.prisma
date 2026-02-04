@@ -1,5 +1,3 @@
-// packages/prisma/prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,170 +9,163 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  password        String
-  firstName       String
-  lastName        String
-  phone           String    @unique
-  role            Role      @default(SEEKER)
-  isVerified      Boolean   @default(false)
-  otp             Int?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id         String     @id @default(uuid())
+  email      String     @unique
+  password   String
+  firstName  String
+  lastName   String
+  phone      String     @unique
+  role       Role       @default(SEEKER)
+  isVerified Boolean    @default(false)
+  otp        Int?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  wishlist   Wishlist[]
 
-  wishlist        Wishlist[]
-  
   @@index([email])
   @@index([phone])
   @@index([role])
 }
 
 model Owner {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  password        String
-  firstName       String
-  lastName        String
-  phone           String    @unique
-  isVerified      Boolean   @default(false)
-  otp             Int?
-  planType        String?   @default("FREE")
-  validity        DateTime  @default(now())
-  listings        Int?      @default(1)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  properties      Property[]
-  
+  id         String     @id @default(uuid())
+  email      String     @unique
+  password   String
+  firstName  String
+  lastName   String
+  phone      String     @unique
+  isVerified Boolean    @default(false)
+  otp        Int?
+  planType   String?    @default("FREE")
+  validity   DateTime   @default(now())
+  listings   Int?       @default(1)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  properties Property[]
+
   @@index([email])
   @@index([phone])
 }
 
-enum Role {
-  SEEKER
-  OWNER
-  ADMIN
-}
-
-// Admin Model
 model Admin {
-  id              String       @id @default(uuid())
-  email           String       @unique
-  password        String
-  firstName       String
-  lastName        String
-  phone           String       @unique
-  role            AdminRole    @default(EMPLOYEE)
-  isActive        Boolean      @default(true)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  lastLogin       DateTime?
-  
+  id            String                 @id @default(uuid())
+  email         String                 @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String                 @unique
+  role          AdminRole              @default(EMPLOYEE)
+  isActive      Boolean                @default(true)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  lastLogin     DateTime?
+  assignedBy    String?
+  activityLogs  AdminActivityLog[]
+  permissions   EmployeePermission?
+  verifications PropertyVerification[]
+
   @@index([email])
   @@index([role])
   @@index([isActive])
 }
 
-enum AdminRole {
-  MAIN_ADMIN
-  EMPLOYEE
+model EmployeePermission {
+  id                  String   @id @default(uuid())
+  adminId             String   @unique
+  canViewUsers        Boolean  @default(false)
+  canViewOwners       Boolean  @default(false)
+  canViewProperties   Boolean  @default(false)
+  canEditProperties   Boolean  @default(false)
+  canVerifyProperties Boolean  @default(false)
+  canHandleUsers      Boolean  @default(false)
+  canHandleOwners     Boolean  @default(false)
+  canViewDashboard    Boolean  @default(true)
+  canViewReports      Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  admin               Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
 }
 
-// Property Model - Corrected
-model Property {
-  id                String       @id @default(uuid())
-  title             String
-  description       String       @db.Text
-  propertyType      PropertyType
-  // Listing type and marketing
-  listingType       String       @default("RENT") // "RENT" or "SALE"
-  type              String?      @default("RENT") // e.g., RENT or SALE (deprecated, use listingType)
-  offer             String?      @default("")
-  
-  // Location
-  address           String
-  city              String
-  townSector        String?
-  colony            String?
-  landmark          String?
-  latitude          Float?
-  longitude         Float?
-  apiAddress        String?
-  
-  // Pricing - Rental
-  rent              String?
-  security          String?      @default("0")
-  maintenance       String?      @default("0")
-  negotiable        Boolean      @default(false)
-  
-  // Pricing - Sale (NEW)
-  salePrice         String?
-  pricePerSqft      String?
-  
-  // Property Measurements (NEW)
-  carpetArea        String?
-  builtUpArea       String?
-  floorNumber       Int?
-  
-  // Property Details (NEW for Sale)
-  propertyAge       String?      // New/1-5 years/5-10 years/10+ years
-  facingDirection   String?      // North/South/East/West
-  possession        String?      // Ready to move/Under construction
-  furnishingDetails String?      @db.Text
-  
-  // Property Details
-  bhk               Int          @default(1)
-  furnished         String
-  accommodation     String?      // For rental properties
-  totalFloors       Int          @default(1)
-  totalUnits        Int          @default(1)
-  
-  // Utilities
-  powerBackup       String
-  waterSupply       String
-  parking           String
-  
-  // Amenities
-  insideAmenities   String[]
-  outsideAmenities  String[]
-  
-  // Preferences (mainly for rental)
-  genderPreference  String?
-  preferredTenants  String[]
-  noticePeriod      String?
-  
-  // Contact
-  contactName       String
-  whatsappNo        String
-  images            String[]
-  
-  // Metadata
-  isAvailable       Boolean      @default(true)
-  isVerified        Boolean      @default(false)
-  isDraft           Boolean      @default(false)
-  
-  // Verification System
-  verificationStatus    VerificationStatus @default(NOT_VERIFIED)
-  verifiedAt            DateTime?
-  verificationExpiry    DateTime?
-  
-  // Stats
-  views             Int          @default(0)
-  contactCount      Int          @default(0)
-  // Expiry (for listing validity)
-  expiry            DateTime?
-  
-  // Owner
-  ownerId           String
-  owner             Owner        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+model AdminActivityLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
-  contacts              Contact[]
-  wishlist              Wishlist[]
-  verificationRequests  VerificationRequest[]
-  
+  @@index([adminId])
+  @@index([createdAt])
+  @@index([entityType])
+}
+
+model Property {
+  id                   String                 @id @default(uuid())
+  title                String
+  description          String
+  propertyType         PropertyType
+  address              String
+  city                 String
+  townSector           String?
+  colony               String?
+  landmark             String?
+  latitude             Float?
+  longitude            Float?
+  apiAddress           String?
+  rent                 String?
+  security             String?                @default("0")
+  maintenance          String?                @default("0")
+  negotiable           Boolean                @default(false)
+  bhk                  Int                    @default(1)
+  furnished            String
+  accommodation        String?
+  totalFloors          Int                    @default(1)
+  totalUnits           Int                    @default(1)
+  powerBackup          String
+  waterSupply          String
+  parking              String
+  insideAmenities      String[]
+  outsideAmenities     String[]
+  genderPreference     String?
+  preferredTenants     String[]
+  noticePeriod         String?
+  contactName          String
+  whatsappNo           String
+  images               String[]
+  isAvailable          Boolean                @default(true)
+  isVerified           Boolean                @default(false)
+  isDraft              Boolean                @default(false)
+  views                Int                    @default(0)
+  contactCount         Int                    @default(0)
+  ownerId              String
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  expiry               DateTime?
+  offer                String?                @default("")
+  type                 String?                @default("RENT")
+  verificationExpiry   DateTime?
+  verificationStatus   VerificationStatus     @default(NOT_VERIFIED)
+  verifiedAt           DateTime?
+  builtUpArea          String?
+  carpetArea           String?
+  facingDirection      String?
+  floorNumber          Int?
+  furnishingDetails    String?
+  listingType          String                 @default("RENT")
+  possession           String?
+  pricePerSqft         String?
+  propertyAge          String?
+  salePrice            String?
+  contacts             Contact[]
+  owner                Owner                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  verifications        PropertyVerification[]
+  verificationRequests VerificationRequest[]
+  wishlist             Wishlist[]
+
   @@index([city])
   @@index([propertyType])
   @@index([listingType])
@@ -183,6 +174,161 @@ model Property {
   @@index([isDraft])
   @@index([createdAt])
   @@index([verificationStatus])
+}
+
+model VerificationRequest {
+  id                    String                    @id @default(uuid())
+  propertyId            String
+  ownerId               String
+  amount                Int                       @default(299)
+  paymentStatus         String                    @default("PENDING")
+  paymentId             String?
+  paymentDate           DateTime?
+  status                VerificationRequestStatus @default(PENDING_PAYMENT)
+  reviewedBy            String?
+  reviewedAt            DateTime?
+  reviewNotes           String?
+  validFrom             DateTime?
+  validUntil            DateTime?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  assignedAt            DateTime?
+  assignedTo            String?
+  propertyCity          String
+  verificationPhotos    String[]                  @default([])
+  locationCapturedAt    DateTime?
+  verificationAddress   String?
+  verificationLatitude  Float?
+  verificationLongitude Float?
+  property              Property                  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([propertyCity])
+  @@index([assignedTo])
+  @@index([createdAt])
+}
+
+model PropertyVerification {
+  id                 String   @id @default(uuid())
+  propertyId         String
+  verifiedBy         String
+  verificationPhotos String[]
+  verificationNotes  String?
+  verifiedAt         DateTime @default(now())
+  validUntil         DateTime
+  isActive           Boolean  @default(true)
+  property           Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  employee           Admin    @relation(fields: [verifiedBy], references: [id])
+
+  @@index([propertyId])
+  @@index([verifiedBy])
+  @@index([verifiedAt])
+  @@index([validUntil])
+  @@index([isActive])
+}
+
+model Contact {
+  id           String        @id @default(uuid())
+  propertyId   String
+  userName     String
+  userPhone    String
+  message      String?
+  contactType  ContactType   @default(INQUIRY)
+  status       ContactStatus @default(NEW)
+  ownerDeleted Boolean       @default(false)
+  userDeleted  Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  property     Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([userPhone])
+  @@index([createdAt])
+}
+
+model Wishlist {
+  id         String   @id @default(uuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model TempMobileVerification {
+  id        String   @id @default(uuid())
+  mobile    String   @unique
+  otp       Int
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([mobile])
+  @@index([expiresAt])
+}
+
+model ContactUs {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  message   String
+  phone     String
+  createdAt DateTime @default(now())
+}
+
+model RentAgreement {
+  id                     String    @id @default(uuid())
+  createdBy              String
+  creatorPhone           String
+  creatorUserId          String?
+  ownerFullName          String
+  ownerPhone             String
+  ownerAddress           String
+  tenantFullName         String
+  tenantPhone            String
+  tenantPermanentAddress String
+  propertyAddress        String
+  annexures              String?
+  rentAmount             String
+  securityDeposit        String
+  agreementDuration      String
+  noticePeriod           String
+  rentStartDate          DateTime
+  paymentStatus          String    @default("PENDING")
+  paymentAmount          String?
+  paymentDate            DateTime?
+  paymentId              String?
+  documentGenerated      Boolean   @default(false)
+  documentUrl            String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  ownerEmail             String?
+  tenantEmail            String?
+
+  @@index([creatorPhone])
+  @@index([creatorUserId])
+  @@index([ownerPhone])
+  @@index([tenantPhone])
+  @@index([createdAt])
+  @@index([paymentStatus])
+}
+
+enum Role {
+  SEEKER
+  OWNER
+  ADMIN
+}
+
+enum AdminRole {
+  MAIN_ADMIN
+  EMPLOYEE
 }
 
 enum PropertyType {
@@ -211,65 +357,6 @@ enum VerificationRequestStatus {
   EXPIRED
 }
 
-// Verification Request Model
-model VerificationRequest {
-  id                String                     @id @default(uuid())
-  propertyId        String
-  property          Property                   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
-  ownerId           String
-  
-  // Payment Details
-  amount            Int                        @default(149)
-  paymentStatus     String                     @default("PENDING") // PENDING, COMPLETED, FAILED
-  paymentId         String?
-  paymentDate       DateTime?
-  
-  // Request Status
-  status            VerificationRequestStatus  @default(PENDING_PAYMENT)
-  
-  // Admin Review
-  reviewedBy        String?
-  reviewedAt        DateTime?
-  reviewNotes       String?                    @db.Text
-  
-  // Verification Period
-  validFrom         DateTime?
-  validUntil        DateTime?
-  
-  createdAt         DateTime                   @default(now())
-  updatedAt         DateTime                   @updatedAt
-  
-  @@index([propertyId])
-  @@index([ownerId])
-  @@index([status])
-  @@index([paymentStatus])
-  @@index([createdAt])
-}
-
-// Contact Model - Simplified (No Visits)
-model Contact {
-  id            String        @id @default(uuid())
-  propertyId    String
-  property      Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
-  userName      String
-  userPhone     String
-  message       String?       @db.Text
-  contactType   ContactType   @default(INQUIRY)
-  status        ContactStatus @default(NEW)
-  
-  ownerDeleted  Boolean       @default(false)
-  userDeleted   Boolean       @default(false)
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  @@index([propertyId])
-  @@index([userPhone])
-  @@index([createdAt])
-}
-
 enum ContactType {
   INQUIRY
   CALL_REQUEST
@@ -280,52 +367,4 @@ enum ContactStatus {
   NEW
   CONTACTED
   CLOSED
-}
-
-// Wishlist Model
-model Wishlist {
-  id          String    @id @default(uuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  propertyId  String
-  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  
-  @@unique([userId, propertyId])
-  @@index([userId])
-  @@index([propertyId])
-}
-
-// OTP Model - For Mobile Verification
-model TempMobileVerifyOwnerListing {
-  id        String   @id @default(uuid())
-  mobile    String
-  otp       Int
-  expiresAt DateTime
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  
-  @@index([mobile])
-  @@index([expiresAt])
-}
-
-model TempMobileVerification {
-  id        String   @id @default(uuid())
-  mobile    String   @unique
-  otp       Int
-  expiresAt DateTime
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  
-  @@index([mobile])
-  @@index([expiresAt])
-}
-
-model ContactUs {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  message   String   @db.Text
-  phone     String
-  createdAt DateTime @default(now())
 }

@@ -1,2 +1,2 @@
-import config from "tailwind-config/postcss.config.js";
+import config from "@repo/tailwind-config/postcss.config.js";
 export default config;

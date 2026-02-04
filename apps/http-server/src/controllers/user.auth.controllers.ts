@@ -109,9 +109,9 @@ export const userLoginController = async (req: Request, res: Response): Promise<
     });
 
     if (!user) {
-      res.status(401).json({
+      res.status(404).json({
         success: false,
-        message: 'Invalid phone or password'
+        message: 'Account not found. Please create your account first.'
       });
       return;
     }
@@ -204,8 +204,7 @@ export const userForgotPasswordController = async (req: Request, res: Response):
 
     const user = await prisma.user.findUnique({ where: { phone } });
     if (!user) {
-      // For security, don't reveal if the user exists or not
-      res.status(200).json({ success: true, message: 'If an account with that mobile number exists, an OTP has been sent.' });
+      res.status(404).json({ success: false, message: 'No seeker account found with this number.' });
       return;
     }
 
@@ -217,7 +216,7 @@ export const userForgotPasswordController = async (req: Request, res: Response):
 
     console.log(`User password reset OTP for ${phone}: ${otp}`); // In a real app, this would be sent via an SMS service
 
-    res.status(200).json({ success: true, message: 'Password reset OTP has been sent.' });
+    res.status(200).json({ success: true, message: 'Password reset OTP has been sent to your WhatsApp Number.' });
   } catch (error) {
     console.error('User forgot password error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -247,7 +246,7 @@ export const userResendOTPController = async (req: Request, res: Response): Prom
       // Don't reveal if user exists or not for security
       res.status(200).json({
         success: true,
-        message: 'If an account with this phone exists, a password reset OTP has been sent.'
+        message: 'If an account with this phone exists, a password reset OTP has been sent to your WhatsApp Number.'
       });
       return;
     }
@@ -266,7 +265,7 @@ export const userResendOTPController = async (req: Request, res: Response): Prom
 
     res.status(200).json({
       success: true,
-      message: 'Password reset OTP has been sent to your phone.',
+      message: 'Password reset OTP has been sent to your WhatsApp Number.',
     });
 
   } catch (error) {

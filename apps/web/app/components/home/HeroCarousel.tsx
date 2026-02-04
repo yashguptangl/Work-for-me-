@@ -33,7 +33,7 @@ export default function HeroCarousel() {
   }, []);
 
   return (
-    <section className="relative w-full h-[45vh] sm:h-[50vh] md:h-[56vh] lg:h-[60vh] overflow-hidden">
+    <section className="relative w-full h-[40vh] sm:h-[50vh] md:h-[56vh] lg:h-[60vh] overflow-hidden">
       {/* Background image transitions */}
       <div className="absolute inset-0">
         <AnimatePresence initial={false}>
@@ -49,21 +49,21 @@ export default function HeroCarousel() {
               src={slides[index]?.image.src || '/default-property.jpg'}
               alt={slides[index]?.title || 'Property'}
               fill
-              className="object-cover"
+              className="object-cover object-center"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/60" />
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* ✅ Static text overlay (won’t reanimate every 3s) */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-3 sm:px-4 md:px-6 text-center pointer-events-none">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-transparent bg-gradient-to-r from-white via-white to-yellow-200 bg-clip-text drop-shadow-[0_6px_24px_rgba(0,0,0,0.35)] leading-tight">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 text-center pointer-events-none">
+        <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold text-transparent bg-gradient-to-r from-white via-white to-yellow-200 bg-clip-text drop-shadow-[0_8px_32px_rgba(0,0,0,0.4)] leading-tight mb-2 sm:mb-3">
           Find Perfect Room for You
         </h1>
-        <p className="mt-2 sm:mt-3 md:mt-4 max-w-sm sm:max-w-md md:max-w-xl text-sm sm:text-base md:text-lg font-medium text-white/85 px-4">
-          Verified Rooms, Flats and Pg with trusted owners and move-in support.
+        <p className="mt-2 sm:mt-3 md:mt-4 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl text-base sm:text-lg md:text-lg lg:text-xl font-medium text-white/90 drop-shadow-lg px-4">
+          List Unlimited Rooms, Flats, Villas, House and PG for Rent - 100% Free for Owners
         </p>
       </div>
     </section>

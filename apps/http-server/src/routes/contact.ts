@@ -5,7 +5,8 @@ import {
     userContactDeleted,
     ownerContactDeleted, 
     userContactFullDetails,
-    ownerContactFullDetails
+    ownerContactFullDetails,
+    generalContacts
 }
     from "../controllers/contact.controllers";
 
@@ -23,4 +24,7 @@ contactRouter.delete("/contact/:id/owner/delete" , ownerAuth , ownerContactDelet
 contactRouter.get("/user/contacts", userAuth , userContactFullDetails );
 contactRouter.get("/owner/contacts" , ownerAuth , ownerContactFullDetails )
 
+
+// Changed the method from GET to POST for the generalContacts route
+contactRouter.post("/general-contact", generalContacts);
 export default contactRouter;

@@ -249,7 +249,6 @@ export const createPropertyController = async (req: Request, res: Response): Pro
         isDraft: isDraft !== undefined ? isDraft : false,
         isVerified: false, 
         ownerId,
-        updatedAt: new Date(),
       },
       include: {
         owner: {
@@ -404,7 +403,7 @@ export const getOwnerPropertiesController = async (req: Request, res: Response):
     // Attach S3 image URLs to each property
     const categories = ["first", "second", "third", "fourth", "fifth"];
     const propertiesWithImages = await Promise.all(
-      properties.map(async (property) => {
+      properties.map(async (property: any) => {
         // Generate signed URLs for images to work with private buckets
         const images = await Promise.all(
           categories.map((category) =>
@@ -457,6 +456,12 @@ export const getOwnerPropertiesController = async (req: Request, res: Response):
 // Get property by ID
 export const getPropertyByIdController = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const ownerId = req.user?.userId;
+  
+  console.log('=== Get Property By ID ===');
+  console.log('Property ID:', id);
+  console.log('Owner ID from token:', ownerId);
+  
   try {
     const property = await prisma.property.findUnique({
       where: { id },
@@ -482,12 +487,28 @@ export const getPropertyByIdController = async (req: Request, res: Response) => 
       }
     });
     
+    console.log('Property found:', property ? 'Yes' : 'No');
+    
     if (!property) {
+      console.log('Property not found in database');
       return res.status(404).json({ 
         success: false, 
         message: "Property not found" 
       });
     }
+    
+    console.log('Property owner ID:', property.ownerId);
+    
+    // Verify ownership if ownerId is provided (authenticated request)
+    if (ownerId && property.ownerId !== ownerId) {
+      console.log('Permission denied - Owner mismatch');
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to access this property"
+      });
+    }
+    
+    console.log('Permission granted - Sending property data');
     
     // Add image URLs
     const categories = ["first", "second", "third", "fourth", "fifth"];
@@ -497,8 +518,8 @@ export const getPropertyByIdController = async (req: Request, res: Response) => 
       : categories.map(category => `/placeholder/${category}.jpeg`);
     
     res.status(200).json({ 
-      success: true, 
-      data: {
+      success: true,
+      property: {
         ...property,
         images
       }
@@ -528,7 +549,13 @@ export const togglePropertyAvailabilityController = async (req: Request, res: Re
     }
 
     const property = await prisma.property.findUnique({
-      where: { id }
+      where: { id },
+      select: {
+        id: true,
+        ownerId: true,
+        isAvailable: true,
+        updatedAt: true
+      }
     });
 
     if (!property) {
@@ -547,11 +574,13 @@ export const togglePropertyAvailabilityController = async (req: Request, res: Re
       return;
     }
 
+    // Toggle availability while preserving the original updatedAt timestamp
+    // This ensures that visibility changes don't affect the "last edited" date
     const updatedProperty = await prisma.property.update({
       where: { id },
       data: {
         isAvailable: !property.isAvailable,
-        updatedAt: new Date()
+        updatedAt: property.updatedAt  // Preserve original updatedAt
       }
     });
 
@@ -660,10 +689,7 @@ export const updatePropertyController = async (req: Request, res: Response): Pro
     if (formData && Object.keys(formData).length > 0) {
       updatedProperty = await prisma.property.update({
         where: { id },
-        data: {
-          ...formData,
-          updatedAt: new Date()
-        },
+        data: formData,
       });
       // Reset 30-day timer
       await updatePropertyTimestamp(id);
@@ -740,8 +766,7 @@ export const deletePropertyController = async (req: Request, res: Response): Pro
       where: { id },
       data: {
         isAvailable: false,
-        isDraft: true,
-        updatedAt: new Date()
+        isDraft: true
       }
     });
 

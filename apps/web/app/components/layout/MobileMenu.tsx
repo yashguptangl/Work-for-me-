@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-
+import NavImage from '@/assets/logo.png'
+import Image from 'next/image'
 
 type Props = {
   open: boolean;
@@ -48,7 +49,9 @@ const itemVariants = {
 export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
   const [mounted, setMounted] = useState(false);
   const prefersReducedMotion = useReducedMotion();
+  
   useEffect(() => { setMounted(true); }, []);
+  
   useEffect(() => {
     if (open) {
       const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -59,19 +62,6 @@ export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
         try { document.body.style.overflow = ''; } catch {}
       };
     }
-  }, [open, onClose]);
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    if (open) {
-      document.addEventListener("keydown", handleKey);
-      document.body.style.overflow = "hidden";
-    }
-    return () => {
-      document.removeEventListener("keydown", handleKey);
-      document.body.style.overflow = "";
-    };
   }, [open, onClose]);
 
   const isLoggedIn = !!user;
@@ -107,20 +97,20 @@ export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <img src="/icon.png" alt="Roomlocate" className="w-8 h-8 rounded-full object-cover bg-gray-100" />
-                <h2 className="text-xl font-semibold">Roomlocate</h2>
+                <Image src={NavImage.src} alt="roomkarts" width={32} height={32} className="w-8 h-8 rounded-full object-cover bg-gray-100" />
+                <h2 className="text-xl font-semibold">roomkarts</h2>
               </div>
               <motion.button whileTap={{ scale: 0.9, rotate: 90 }} onClick={onClose} aria-label="Close menu" className="p-2 text-xl">✕</motion.button>
             </div>
 
             {/* Top login row */}
             {!isLoggedIn && (
-              <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-3 px-5 py-4 text-gray-800 hover:bg-gray-50">
-                <Link href="/login" onClick={onClose} className="flex items-center gap-3">
-                <User className="w-5 h-5" />
-                <span className="font-medium">Login</span>
-                </Link>
-              </motion.div>
+              <Link href="/login">
+                <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} onClick={onClose} className="flex items-center gap-3 px-5 py-4 text-gray-800 hover:bg-gray-50 cursor-pointer">
+                  <User className="w-5 h-5" />
+                  <span className="font-medium">Login</span>
+                </motion.div>
+              </Link>
             )}
 
             {/* Divider */}
@@ -131,11 +121,22 @@ export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
               <motion.nav className="flex flex-col py-2" variants={listVariants} initial="hidden" animate="visible">
                 {[
                   { href: '/', label: 'Home', bold: true },
-                  { href: '/properties', label: 'Properties' },
-                  { href: '/about', label: 'About' },
+                  { href: '/guides', label: 'Guides' },
+                  { href: '/pricing', label: 'Pricing' },
+                  { href: '/about', label: 'About Us' },
                 ].map((item) => (
                   <motion.div key={item.href} variants={itemVariants} whileHover={{ x: 6 }} whileTap={{ scale: 0.98 }}>
-                    <Link href={item.href} onClick={onClose} className={`px-5 py-3 text-[17px] hover:bg-gray-50 ${item.bold ? 'font-semibold text-gray-900' : 'text-gray-700 hover:text-gray-900'}`}>{item.label}</Link>
+                    <Link href={item.href}>
+                      <span
+                        onClick={onClose}
+                        className={`block px-5 py-3 text-[17px] hover:bg-gray-50 ${item.bold ? 'font-semibold text-gray-900' : 'text-gray-700 hover:text-gray-900'}`}
+                        role="link"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {item.label}
+                      </span>
+                    </Link>
                   </motion.div>
                 ))}
               </motion.nav>
@@ -145,19 +146,34 @@ export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
               <motion.nav className="flex flex-col py-2" variants={listVariants} initial="hidden" animate="visible">
                 {(user?.role === 'OWNER'
                   ? [
+                      { href: '/guides#owner-guide', label: 'Guide' },
                       { href: '/owner/dashboard', label: 'Dashboard' },
                       { href: '/owner/profile', label: 'My Profile' },
                       { href: '/list-property', label: 'Add Property' },
+                      { href: '/rent-agreements', label: 'Rent Agreements' },
                     ]
                   : [
+                      { href: '/guides#user-guide', label: 'Guide' },
                       { href: '/user/dashboard', label: 'Dashboard' },
                       { href: '/user/profile', label: 'My Profile' },
                       { href: '/properties', label: 'Browse Properties' },
                       { href: '/user/dashboard', label: 'My Wishlist' },
+                      { href: '/rent-agreements', label: 'Rent Agreements' },
+                      
                     ]
                 ).map((item) => (
                   <motion.div key={item.href + item.label} variants={itemVariants} whileHover={{ x: 6 }} whileTap={{ scale: 0.98 }}>
-                    <Link href={item.href} onClick={onClose} className="px-5 py-3 text-[17px] text-gray-700 hover:text-gray-900 hover:bg-gray-50">{item.label}</Link>
+                    <Link href={item.href}>
+                      <span
+                        onClick={onClose}
+                        className="block px-5 py-3 text-[17px] text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                        role="link"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {item.label}
+                      </span>
+                    </Link>
                   </motion.div>
                 ))}
               </motion.nav>
@@ -174,12 +190,12 @@ export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
             {/* Bottom pill button (only for guests) */}
             {!isLoggedIn && (
               <div className="mt-auto p-4">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="block">
-                  <Link href="/signup?type=owner" onClick={onClose} className="flex items-center justify-between w-full rounded-full border px-5 py-3 bg-white shadow-sm">
+                <Link href="/login?type=owner">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onClose} className="flex items-center justify-between w-full rounded-full border px-5 py-3 bg-white shadow-sm cursor-pointer">
                     <span className="font-medium">Post property</span>
                     <span className="text-[11px] px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700 font-semibold">FREE</span>
-                  </Link>
-                </motion.div>
+                  </motion.div>
+                </Link>
               </div>
             )}
           </motion.div>

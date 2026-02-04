@@ -12,7 +12,6 @@ import {
   Home
 } from 'lucide-react';
 import Image from 'next/image';
-import { StaticImageData } from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -27,7 +26,7 @@ interface PropertyCardProps {
     type: 'PG' | 'ROOM' | 'FLAT' | 'STUDIO';
     price: number;
     location: string;
-    image: string | StaticImageData;
+    image: string;
     isVerified: boolean;
     gender: 'male' | 'female' | 'coed';
     amenities: string[];
@@ -84,9 +83,9 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           description: `${property.title} saved to your favorites`
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to toggle wishlist:', error);
-      toast.error(error.message || 'Failed to update wishlist');
+      toast.error('Failed to update wishlist');
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +131,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   };
 
   return (
-    <Link href={`/properties/${property.id}`} className="block" prefetch>
+    <Link href={`/properties/${property.id}`} className="block">
     <motion.div
       initial={{ opacity: 0, y: 50, rotateY: -15 }}
       whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
@@ -144,7 +143,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     <Card className="property-card overflow-hidden group cursor-pointer ring-1 ring-transparent hover:ring-sky-200 hover:shadow-xl transition-all duration-300" role="link">
       <div className="relative h-48">
         <Image 
-          src={property.image as any}
+          src={property.image}
           alt={property.title}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"

@@ -6,8 +6,9 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Search, ArrowLeft, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 
-const NotFound = () => {
+const NotFoundComponent = () => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -59,7 +60,7 @@ const NotFound = () => {
               Oops! Page Not Found
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-2 px-4">
-              The page you're looking for seems to have moved or doesn't exist.
+              The page you&apos;re looking for seems to have moved or doesn&apos;t exist.
             </p>
             <p className="text-xs sm:text-sm text-gray-500 font-mono bg-gray-100 rounded-lg px-3 py-2 inline-block max-w-full truncate">
               {pathname}
@@ -137,4 +138,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default dynamic(() => Promise.resolve(NotFoundComponent), { ssr: false });

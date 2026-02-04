@@ -12,8 +12,8 @@ import { useAuth } from '@/context/AuthContext';
 
 const MobileVerifyContent = () => {
   const searchParams = useSearchParams();
-  const userType = searchParams.get('type') || 'seeker';
-  const phoneFromSignup = searchParams.get('phone') || '';
+  const userType = searchParams?.get('type') || 'seeker';
+  const phoneFromSignup = searchParams?.get('phone') || '';
   const [mobile, setMobile] = useState(phoneFromSignup);
   const [otp, setOtp] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(!!phoneFromSignup);
@@ -21,6 +21,12 @@ const MobileVerifyContent = () => {
   const [countdown, setCountdown] = useState(0);
   const [error, setError] = useState('');
   const { verifyOtp } = useAuth();
+
+  // Handle mobile input to only allow 10 digits
+  const handleMobileChange = (value: string) => {
+    const numericValue = value.replace(/\D/g, '').slice(0, 10);
+    setMobile(numericValue);
+  };
 
   const switchRole = (newRole: string) => {
     window.location.href = `/mobile-verify?type=${newRole}${phoneFromSignup ? `&phone=${phoneFromSignup}` : ''}`;
@@ -43,7 +49,15 @@ const MobileVerifyContent = () => {
 
   const handleSendOtp = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
+    
+    // Validate mobile number
+    if (mobile.length !== 10) {
+      setError('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    
     setIsLoading(true);
+    setError('');
     
     try {
       const response = userType === 'owner'
@@ -53,8 +67,9 @@ const MobileVerifyContent = () => {
         setIsOtpSent(true);
         setCountdown(60);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to send OTP:', error);
+      setError('Failed to send OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -67,9 +82,9 @@ const MobileVerifyContent = () => {
     
     try {
       await verifyOtp(mobile, parseInt(otp), userType as 'seeker' | 'owner');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to verify OTP:', error);
-      setError(error.message || 'Failed to verify OTP. Please try again.');
+      setError('Failed to verify OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +97,7 @@ const MobileVerifyContent = () => {
         ? apiClient.ownerResendOtp({ phone: mobile })
         : apiClient.userResendOtp({ phone: mobile }));
       setCountdown(60);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to resend OTP:', error);
     } finally {
       setIsLoading(false);
@@ -133,7 +148,7 @@ const MobileVerifyContent = () => {
               Verify Mobile Number
             </h1>
             <p className="text-muted-foreground">
-              We've sent a 6-digit code to <strong>{mobile}</strong>
+              We&apos;ve sent a 6-digit code to <strong>{mobile}</strong>
             </p>
           </div>
 
@@ -209,7 +224,7 @@ const MobileVerifyContent = () => {
   return (
     <div className="min-h-screen bg-background flex items-start justify-center p-4">
       {/* SEO Meta */}
-      <title>Mobile Verification - Roomlocate | Verify Your Mobile Number</title>
+      <title>Mobile Verification - roomkarts | Verify Your Mobile Number</title>
 
       <div className="w-full max-w-md">
         {/* Header */}
@@ -240,7 +255,7 @@ const MobileVerifyContent = () => {
             Verify Mobile Number
           </h1>
           <p className="text-muted-foreground">
-            We'll send a verification code to your mobile number
+            We&apos;ll send a verification code to your mobile number
           </p>
         </div>
 
@@ -258,15 +273,21 @@ const MobileVerifyContent = () => {
                   <Input
                     id="mobile"
                     type="tel"
-                    placeholder="98765 43210"
+                    placeholder="Enter 10-digit WhatsApp Number"
                     className="pl-10"
                     value={mobile}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMobile(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleMobileChange(e.target.value)}
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                    minLength={10}
                     required
                   />
                 </div>
+                {error && (
+                  <p className="text-xs text-red-500">{error}</p>
+                )}
                 <p className="text-xs text-muted-foreground">
-                  Enter your mobile number
+                  Enter your 10-digit mobile number
                 </p>
               </div>
 
@@ -293,7 +314,7 @@ const MobileVerifyContent = () => {
         {/* Security Notice */}
         <div className="mt-6 text-center">
           <p className="text-xs text-muted-foreground">
-            We'll send a one-time verification code via SMS. Standard SMS rates may apply.
+            We&apos;ll send a one-time verification code.
           </p>
         </div>
       </div>

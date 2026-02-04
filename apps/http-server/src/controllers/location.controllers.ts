@@ -55,14 +55,14 @@ export const nearMeController = async (req: Request, res: Response) => {
 
         const nearbyProperties = await Promise.all(
             properties
-                .filter(property => {
+                .filter((property: any) => {
                     const propLat = parseFloat(property.latitude as any);
                     const propLng = parseFloat(property.longitude as any);
                     if (isNaN(propLat) || isNaN(propLng)) return false;
                     const distance = getDistance(userLat, userLng, propLat, propLng);
                     return distance <= 15;
                 })
-                .map(async property => {
+                .map(async (property: any) => {
                     const propertyType = property.propertyType
                     let imageKey = `images/${propertyType}/${property.id}/inside.jpeg`;
                     let imageUrl: string | null = null;

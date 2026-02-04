@@ -29,7 +29,7 @@ export const preverifySendOtp = async (req :Request, res : Response) =>{
   }
     // Send OTP via WhatsApp
     // await sendOtpViaWhatsApp(mobile, otp.toString());
-  res.status(200).json({ message: "OTP sent successfully to registered WhatsApp No" });
+  res.status(200).json({ message: "OTP has been sent successfully to your WhatsApp Number" });
   return;
 }
 

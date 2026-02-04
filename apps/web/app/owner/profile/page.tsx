@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Mail, Phone, Calendar, Home, Shield, Loader2, Crown, Package, FileText } from "lucide-react";
+import { Building2, Mail, Phone, Calendar, Home, Shield, Loader2, Crown, FileText } from "lucide-react";
 
 const OwnerProfilePage = () => {
   const { owner, requireRole } = useAuth();
-  const { propertyStats, isLoading: statsLoading } = useOwnerData();
+  const { propertyStats } = useOwnerData();
   const router = useRouter();
 
   useEffect(() => {
@@ -180,7 +180,7 @@ const OwnerProfilePage = () => {
                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">Active Listings</p>
                     <Home className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   </div>
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600">{owner.listings || 0}</p>
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600">{propertyStats?.total || 0}</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Properties Listed</p>
                 </div>
 
@@ -189,7 +189,9 @@ const OwnerProfilePage = () => {
                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">Member Since</p>
                     <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                   </div>
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-600">{new Date().getFullYear()}</p>
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-600">
+                    {owner.createdAt ? new Date(owner.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : new Date().getFullYear()}
+                  </p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Active Owner</p>
                 </div>
               </CardContent>

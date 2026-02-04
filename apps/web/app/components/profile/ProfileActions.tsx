@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "../../components/ui/button";
 import { useRouter } from "next/navigation";
 
-export default function ProfileActions({ user, setUser }: { user: any; setUser: (u: any) => void }) {
+export default function ProfileActions({ user}: { user: any; setUser: (u: any) => void }) {
   const router = useRouter();
 
   const handleEdit = () => {

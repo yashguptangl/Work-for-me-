@@ -133,13 +133,23 @@ export function useAuthImplementation() {
       } catch (error: any) {
         const message = error.message || "";
         const isVerifyError = message.toLowerCase().includes("verify");
+        const isAccountNotFound = message.toLowerCase().includes("account not found") || message.toLowerCase().includes("create your account");
 
-        toast.error(isVerifyError ? "Verification Required" : "Login Failed", {
-          description: message || "Invalid credentials"
-        });
+        if (isAccountNotFound) {
+          toast.error("Account Not Found", {
+            description: "Please create your account first."
+          });
+          setTimeout(() => {
+            router.replace(`/signup?type=${userType}`);
+          }, 1500);
+        } else {
+          toast.error(isVerifyError ? "Verification Required" : "Login Failed", {
+            description: message || "Invalid credentials"
+          });
 
-        if (isVerifyError) {
-          router.replace(`/mobile-verify?phone=${email}&type=${userType}&redirect=/login?type=${userType}`);
+          if (isVerifyError) {
+            router.replace(`/mobile-verify?phone=${email}&type=${userType}&redirect=/login?type=${userType}`);
+          }
         }
       } finally {
         setIsLoading(false);
@@ -259,7 +269,7 @@ export function useAuthImplementation() {
 
         if (response.success) {
           toast.success("OTP sent", {
-            description: "Password reset OTP has been sent to your mobile"
+            description: "Password reset OTP has been sent to your WhatsApp Number"
           });
           return true;
         }

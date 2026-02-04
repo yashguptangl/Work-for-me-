@@ -26,8 +26,8 @@
   --color-ring: hsl(var(--ring));
 }
 
-/* Roomlocate Design System - migrated */
-/* Roomlocate Design System - Real Estate Platform */
+/* roomkarts Design System - migrated */
+/* roomkarts Design System - Real Estate Platform */
 
 @layer base {
   :root {
@@ -40,7 +40,7 @@
     --card-foreground: 220 9% 16%;
     --card-hover: 0 0% 97%;
     
-    /* Primary - Roomlocate Blue */
+    /* Primary - roomkarts Blue */
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 98%;
     --primary-hover: 217 91% 55%;

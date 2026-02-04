@@ -18,6 +18,7 @@ interface User {
 }
 
 interface Owner {
+  createdAt: any;
   id: string;
   email: string;
   firstName: string;
@@ -30,6 +31,9 @@ interface Owner {
 }
 
 export interface Property {
+  [x: string]: string;
+  status: string;
+  verificationStatus: string;
   id: string;
   title: string;
   description: string;
@@ -445,6 +449,18 @@ class ApiClient {
     }
 
     return this.request(`/search/near-me?${searchParams.toString()}`);
+  }
+
+  // Get available townsectors/areas for a city
+  async getAvailableAreas(city: string, listingType?: 'RENT' | 'SALE'): Promise<ApiResponse<string[]>> {
+    const searchParams = new URLSearchParams();
+    searchParams.append('city', city);
+    
+    if (listingType) {
+      searchParams.append('listingType', listingType);
+    }
+
+    return this.request(`/search/available-areas?${searchParams.toString()}`);
   }
 
   // User Dashboard APIs

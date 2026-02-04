@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowLeft, Upload, X, Home, Building2, DoorClosed } from "lucide-react";
+import { Loader2, ArrowLeft, Upload, X } from "lucide-react";
 import { citiesData } from "@/lib/cities";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,7 +53,7 @@ const outsideAmenitiesOptions = [
 const EditPropertyPage = () => {
   const router = useRouter();
   const params = useParams();
-  const propertyId = params.id as string;
+  const propertyId = params?.id as string;
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -85,15 +85,67 @@ const EditPropertyPage = () => {
   const fetchProperty = async () => {
     try {
       const response = await apiClient.getPropertyById(propertyId);
+      console.log('Property data received:', response.data);
       if (response.success && response.data) {
-        setForm({
-          ...response.data,
-          insideAmenities: response.data.insideAmenities || [],
-          outsideAmenities: response.data.outsideAmenities || [],
-          preferredTenants: response.data.preferredTenants || [],
-        });
-        if (response.data.imageUrls && response.data.imageUrls.length > 0) {
-          setExistingImages(response.data.imageUrls);
+        const data = response.data;
+        const propertyData = {
+          id: data.id || "",
+          listingType: data.listingType || "RENT",
+          propertyType: data.propertyType || "",
+          title: data.title || "",
+          description: data.description || "",
+          
+          // Pricing fields
+          rent: data.rent?.toString() || "",
+          salePrice: data.salePrice?.toString() || "",
+          security: data.security?.toString() || "",
+          maintenance: data.maintenance?.toString() || "",
+          carpetArea: data.carpetArea?.toString() || "",
+          builtUpArea: data.builtUpArea?.toString() || "",
+          pricePerSqft: data.pricePerSqft?.toString() || "",
+          negotiable: data.negotiable || false,
+          
+          // Location fields
+          city: data.city || "",
+          townSector: data.townSector || "",
+          colony: data.colony || "",
+          address: data.address || "",
+          landmark: data.landmark || "",
+          
+          // Property details
+          bhk: data.bhk?.toString() || "",
+          furnished: data.furnished || "",
+          accommodation: data.accommodation || "",
+          totalFloors: data.totalFloors?.toString() || "",
+          totalUnits: data.totalUnits?.toString() || "",
+          floorNumber: data.floorNumber?.toString() || "",
+          
+          // Sale specific fields
+          propertyAge: data.propertyAge || "",
+          facingDirection: data.facingDirection || "",
+          possession: data.possession || "",
+          furnishingDetails: data.furnishingDetails || "",
+          
+          // Amenities
+          powerBackup: data.powerBackup || "",
+          waterSupply: data.waterSupply || "",
+          parking: data.parking || "",
+          insideAmenities: data.insideAmenities || [],
+          outsideAmenities: data.outsideAmenities || [],
+          
+          // Preferences
+          genderPreference: data.genderPreference || "",
+          preferredTenants: data.preferredTenants || [],
+          
+          // Additional fields
+          status: data.status || "",
+          verificationStatus: data.verificationStatus || "",
+          imageUrls: data.imageUrls || [],
+        };
+        console.log('Setting form with data:', propertyData);
+        setForm(propertyData);
+        if (data.imageUrls && data.imageUrls.length > 0) {
+          setExistingImages(data.imageUrls);
         }
       }
     } catch (error: any) {
@@ -255,32 +307,33 @@ const EditPropertyPage = () => {
   const mainCities = Object.keys(citiesData);
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="mb-6">
+    <div className="container mx-auto p-2 sm:p-4 md:p-6 max-w-6xl">
+      <div className="mb-4 sm:mb-6">
         <Link href="/owner/dashboard">
-          <Button variant="ghost">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+          <Button variant="ghost" size="sm" className="text-xs sm:text-sm">
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Back to Dashboard
           </Button>
         </Link>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Property</CardTitle>
+      <Card className="shadow-lg">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl md:text-2xl">Edit Property</CardTitle>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Update your property details</p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Listing Type */}
             <div className="space-y-2">
-              <Label htmlFor="listingType">Listing Type *</Label>
+              <Label htmlFor="listingType" className="text-sm sm:text-base">Listing Type *</Label>
               <Select value={form.listingType} onValueChange={(value) => setForm({ ...form, listingType: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="text-sm sm:text-base">
                   <SelectValue placeholder="Select listing type" />
                 </SelectTrigger>
                 <SelectContent>
                   {listingTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    <SelectItem key={type.value} value={type.value} className="text-sm sm:text-base">{type.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -288,36 +341,37 @@ const EditPropertyPage = () => {
 
             {/* Property Type */}
             <div className="space-y-2">
-              <Label htmlFor="propertyType">Property Type *</Label>
+              <Label htmlFor="propertyType" className="text-sm sm:text-base">Property Type *</Label>
               <Select value={form.propertyType} onValueChange={(value) => setForm({ ...form, propertyType: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="text-sm sm:text-base">
                   <SelectValue placeholder="Select property type" />
                 </SelectTrigger>
                 <SelectContent>
                   {propertyTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    <SelectItem key={type.value} value={type.value} className="text-sm sm:text-base">{type.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             {/* Basic Details */}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Property Title *</Label>
+                <Label htmlFor="title" className="text-sm sm:text-base">Property Title *</Label>
                 <Input
                   id="title"
                   value={form.title || ""}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   required
                   placeholder="e.g., 2BHK Flat in Sector 62"
+                  className="text-sm sm:text-base"
                 />
               </div>
               
               {/* Pricing Section - Conditional */}
               {form.listingType === "RENT" ? (
                 <div className="space-y-2">
-                  <Label htmlFor="rent">Monthly Rent (₹) *</Label>
+                  <Label htmlFor="rent" className="text-sm sm:text-base">Monthly Rent (₹) *</Label>
                   <Input
                     id="rent"
                     type="number"
@@ -325,11 +379,12 @@ const EditPropertyPage = () => {
                     onChange={(e) => setForm({ ...form, rent: e.target.value })}
                     required
                     placeholder="10000"
+                    className="text-sm sm:text-base"
                   />
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="salePrice">Sale Price (₹) *</Label>
+                  <Label htmlFor="salePrice" className="text-sm sm:text-base">Sale Price (₹) *</Label>
                   <Input
                     id="salePrice"
                     type="number"
@@ -337,160 +392,213 @@ const EditPropertyPage = () => {
                     onChange={(e) => setForm({ ...form, salePrice: e.target.value })}
                     required
                     placeholder="5000000"
+                    className="text-sm sm:text-base"
                   />
                 </div>
               )}
             </div>
 
             {/* Location */}
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City *</Label>
-                <Select value={form.city} onValueChange={(value) => setForm({ ...form, city: value })}>
-                  <SelectTrigger>
+                <Label htmlFor="city" className="text-sm sm:text-base">City *</Label>
+                <Select value={form.city} onValueChange={(value) => setForm({ ...form, city: value, townSector: "" })}>
+                  <SelectTrigger className="text-sm sm:text-base">
                     <SelectValue placeholder="Select city" />
                   </SelectTrigger>
                   <SelectContent>
                     {mainCities.map((city) => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                      <SelectItem key={city} value={city} className="text-sm sm:text-base">{city}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <Label>Town/Sector *</Label>
+                <Label className="text-sm sm:text-base">Town/Sector *</Label>
                 <ComboBox
                   options={availableAreas}
+                  value={form.townSector}
                   placeholder="Select area"
                   onChange={(value: string) => setForm({ ...form, townSector: value })}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="colony">Colony/Locality</Label>
+                <Label htmlFor="colony" className="text-sm sm:text-base">Colony/Locality</Label>
                 <Input
                   id="colony"
                   value={form.colony || ""}
                   onChange={(e) => setForm({ ...form, colony: e.target.value })}
                   placeholder="DLF Phase 2"
+                  className="text-sm sm:text-base"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Full Address *</Label>
+              <Label htmlFor="address" className="text-sm sm:text-base">Full Address *</Label>
               <Input
                 id="address"
                 value={form.address || ""}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                 required
                 placeholder="House/Flat No, Street Name"
+                className="text-sm sm:text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="landmark">Landmark</Label>
+              <Label htmlFor="landmark" className="text-sm sm:text-base">Landmark</Label>
               <Input
                 id="landmark"
                 value={form.landmark || ""}
                 onChange={(e) => setForm({ ...form, landmark: e.target.value })}
                 placeholder="Near Metro Station"
+                className="text-sm sm:text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-sm sm:text-base">Description</Label>
               <Textarea
                 id="description"
                 value={form.description || ""}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={4}
                 placeholder="Describe your property..."
+                className="text-sm sm:text-base"
               />
             </div>
 
             {/* Property Details */}
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="bhk">BHK *</Label>
+                <Label htmlFor="bhk" className="text-sm sm:text-base">BHK *</Label>
                 <Select value={form.bhk?.toString()} onValueChange={(value) => setForm({ ...form, bhk: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm sm:text-base">
                     <SelectValue placeholder="Select BHK" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 BHK</SelectItem>
-                    <SelectItem value="2">2 BHK</SelectItem>
-                    <SelectItem value="3">3 BHK</SelectItem>
-                    <SelectItem value="4">4 BHK</SelectItem>
-                    <SelectItem value="5">5+ BHK</SelectItem>
+                    <SelectItem value="1" className="text-sm sm:text-base">1 BHK</SelectItem>
+                    <SelectItem value="2" className="text-sm sm:text-base">2 BHK</SelectItem>
+                    <SelectItem value="3" className="text-sm sm:text-base">3 BHK</SelectItem>
+                    <SelectItem value="4" className="text-sm sm:text-base">4 BHK</SelectItem>
+                    <SelectItem value="5" className="text-sm sm:text-base">5+ BHK</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="furnished">Furnished Status *</Label>
+                <Label htmlFor="furnished" className="text-sm sm:text-base">Furnished Status *</Label>
                 <Select value={form.furnished} onValueChange={(value) => setForm({ ...form, furnished: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm sm:text-base">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
                     {furnishedOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                      <SelectItem key={option} value={option} className="text-sm sm:text-base">{option}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="accommodation">Accommodation</Label>
+                <Label htmlFor="accommodation" className="text-sm sm:text-base">Accommodation</Label>
                 <Input
                   id="accommodation"
                   value={form.accommodation || ""}
                   onChange={(e) => setForm({ ...form, accommodation: e.target.value })}
                   placeholder="2-3 persons"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="totalFloors" className="text-sm sm:text-base">Total Floors *</Label>
+                <Input
+                  id="totalFloors"
+                  type="number"
+                  value={form.totalFloors || ""}
+                  onChange={(e) => setForm({ ...form, totalFloors: e.target.value })}
+                  required
+                  placeholder="5"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="totalUnits" className="text-sm sm:text-base">Total Units *</Label>
+                <Input
+                  id="totalUnits"
+                  type="number"
+                  value={form.totalUnits || ""}
+                  onChange={(e) => setForm({ ...form, totalUnits: e.target.value })}
+                  required
+                  placeholder="20"
+                  className="text-sm sm:text-base"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="floorNumber" className="text-sm sm:text-base">Floor Number</Label>
+                <Input
+                  id="floorNumber"
+                  type="number"
+                  value={form.floorNumber || ""}
+                  onChange={(e) => setForm({ ...form, floorNumber: e.target.value })}
+                  placeholder="3"
+                  className="text-sm sm:text-base"
                 />
               </div>
             </div>
 
             {/* Pricing Details - Conditional */}
             {form.listingType === "RENT" ? (
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="security">Security Deposit (₹)</Label>
-                  <Input
-                    id="security"
-                    type="number"
-                    value={form.security || ""}
-                    onChange={(e) => setForm({ ...form, security: e.target.value })}
-                    placeholder="20000"
-                  />
-                </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="security" className="text-sm sm:text-base">Security Deposit (₹) *</Label>
+                    <Input
+                      id="security"
+                      type="number"
+                      value={form.security || ""}
+                      onChange={(e) => setForm({ ...form, security: e.target.value })}
+                      required
+                      placeholder="20000"
+                      className="text-sm sm:text-base"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="maintenance">Maintenance (₹/month)</Label>
-                  <Input
-                    id="maintenance"
-                    type="number"
-                    value={form.maintenance || ""}
-                    onChange={(e) => setForm({ ...form, maintenance: e.target.value })}
-                    placeholder="1000"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maintenance" className="text-sm sm:text-base">Maintenance (₹/month) *</Label>
+                    <Input
+                      id="maintenance"
+                      type="number"
+                      value={form.maintenance || ""}
+                      onChange={(e) => setForm({ ...form, maintenance: e.target.value })}
+                      required
+                      placeholder="1000"
+                      className="text-sm sm:text-base"
+                    />
+                  </div>
 
-                <div className="flex items-center space-x-2 pt-8">
-                  <Checkbox
-                    id="negotiable"
-                    checked={form.negotiable}
-                    onCheckedChange={(checked) => setForm({ ...form, negotiable: !!checked })}
-                  />
-                  <Label htmlFor="negotiable">Rent Negotiable</Label>
+                  <div className="flex items-center space-x-2 pt-6 sm:pt-8">
+                    <Checkbox
+                      id="negotiable"
+                      checked={form.negotiable}
+                      onCheckedChange={(checked) => setForm({ ...form, negotiable: !!checked })}
+                    />
+                    <Label htmlFor="negotiable" className="text-xs sm:text-sm">Rent Negotiable</Label>
+                  </div>
                 </div>
-              </div>
+              </>
             ) : (
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="carpetArea">Carpet Area (sq.ft) *</Label>
+                  <Label htmlFor="carpetArea" className="text-sm sm:text-base">Carpet Area (sq.ft) *</Label>
                   <Input
                     id="carpetArea"
                     type="number"
@@ -498,6 +606,7 @@ const EditPropertyPage = () => {
                     onChange={(e) => setForm({ ...form, carpetArea: e.target.value })}
                     required
                     placeholder="1200"
+                    className="text-sm sm:text-base"
                   />
                 </div>
 
@@ -744,9 +853,16 @@ const EditPropertyPage = () => {
                 <Label htmlFor="whatsappNo">WhatsApp Number</Label>
                 <Input
                   id="whatsappNo"
+                  type="tel"
                   value={form.whatsappNo || ""}
-                  onChange={(e) => setForm({ ...form, whatsappNo: e.target.value })}
-                  placeholder="9876543210"
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setForm({ ...form, whatsappNo: numericValue });
+                  }}
+                  placeholder="10-digit WhatsApp Number"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  minLength={10}
                 />
               </div>
             </div>

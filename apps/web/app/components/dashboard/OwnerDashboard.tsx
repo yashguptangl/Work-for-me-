@@ -1,13 +1,13 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { useOwnerData } from "@/hooks/useOwnerData";
+import { Property, useOwnerData } from "@/hooks/useOwnerData";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AlertCircle, Home, Loader2, Edit, Eye, EyeOff, Upload, MapPin, Building2, MessageSquare, Phone, User as UserIcon, FileText, Trash } from "lucide-react";
+import { AlertCircle, Home, Loader2, Edit, Eye, EyeOff, Upload, MapPin, Building2, MessageSquare, Phone, User as UserIcon, FileText, Trash, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -122,9 +122,9 @@ const OwnerDashboardPage = () => {
       toast.success("Success", {
         description: "Property visibility updated successfully"
       });
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Error", {
-        description: error.message || "Failed to update property visibility"
+        description: "Failed to update property visibility"
       });
     } finally {
       setTogglingProperty(null);
@@ -142,9 +142,9 @@ const OwnerDashboardPage = () => {
       toast.success("Contact deleted", {
         description: "Contact has been removed successfully"
       });
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Error", {
-        description: error.message || "Failed to delete contact"
+        description: "Failed to delete contact"
       });
     } finally {
       setDeletingContact(null);
@@ -156,7 +156,7 @@ const OwnerDashboardPage = () => {
     setShowImageUpload(true);
   };
 
-  const handleEditClick = (property: any) => {
+  const handleEditClick = (property: Property) => {
     // Check if property can be edited (once a month restriction)
     if (property.updatedAt) {
       const lastUpdated = new Date(property.updatedAt);
@@ -176,7 +176,7 @@ const OwnerDashboardPage = () => {
     window.location.href = `/owner/edit-property/${property.id}`;
   };
 
-  const handleDirectEdit = (property: any) => {
+  const handleDirectEdit = (property: Property) => {
     // Direct edit without restrictions
     window.location.href = `/owner/edit-property/${property.id}`;
   };
@@ -195,9 +195,22 @@ const OwnerDashboardPage = () => {
             alt={property.title}
             fill
             unoptimized
-            className="object-cover"
+            className={`object-cover transition-all duration-300 ${
+              property.isAvailable ? '' : 'opacity-30'
+            }`}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
+          
+          {/* Verified Badge - Top Left */}
+          {property.verificationStatus === 'VERIFIED' && property.verificationExpiry && new Date(property.verificationExpiry) > new Date() && (
+            <div className="absolute top-2 left-2 flex items-center gap-1 bg-green-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg">
+              <svg className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="text-[10px] sm:text-xs font-bold">Verified</span>
+            </div>
+          )}
+
           <div className="absolute top-2 right-2 flex gap-1.5 sm:gap-2 flex-wrap">
             {property.isDraft && (
               <Badge variant="secondary" className="bg-orange-500 text-white text-[10px] sm:text-xs h-5 sm:h-6">Draft</Badge>
@@ -206,7 +219,7 @@ const OwnerDashboardPage = () => {
               <Badge variant="secondary" className="bg-purple-500 text-white text-[10px] sm:text-xs h-5 sm:h-6">Sale</Badge>
             )}
             {property.listingType === 'RENT' && (
-              <Badge variant="secondary" className="bg-green-500 text-white text-[10px] sm:text-xs h-5 sm:h-6">Rent</Badge>
+              <Badge variant="secondary" className="bg-blue-500 text-white text-[10px] sm:text-xs h-5 sm:h-6">Rent</Badge>
             )}
           </div>
         </div>
@@ -239,16 +252,84 @@ const OwnerDashboardPage = () => {
         )}
 
         <div className="flex flex-col gap-2 mt-auto">
+          {/* Verification Badge - Active */}
+          {property.verificationStatus === 'VERIFIED' && property.verificationExpiry && new Date(property.verificationExpiry) > new Date() && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-1.5 sm:p-2 md:p-3 text-[10px] sm:text-xs flex justify-between items-center">
+              <p className="text-green-800 font-semibold flex items-center gap-1 sm:gap-1.5">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="truncate">Verified Property</span>
+              </p>
+              <p className="text-green-600 text-[9px] sm:text-[10px] mt-0.5 sm:mt-1">
+                Valid until {new Date(property.verificationExpiry).toLocaleDateString()}
+              </p>
+            </div>
+          )}
+          
+          {/* Verification Badge - Expired */}
+          {(property.verificationStatus === 'EXPIRED' || (property.verificationStatus === 'VERIFIED' && property.verificationExpiry && new Date(property.verificationExpiry) <= new Date())) && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-1.5 sm:p-2 md:p-3 text-[10px] sm:text-xs">
+              <p className="text-orange-800 font-semibold flex items-center gap-1 sm:gap-1.5">
+                <svg className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="truncate">⏰ Verification Expired</span>
+              </p>
+              <p className="text-orange-600 text-[9px] sm:text-[10px] mt-0.5 sm:mt-1">
+                Renew to regain verified badge
+              </p>
+            </div>
+          )}
+          
+          {/* Verification Pending Badge - Single Line */}
+          {property.verificationStatus === 'PENDING_VERIFICATION' && (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-lg sm:rounded-xl p-1 sm:p-1.5 shadow-sm">
+              <div className="flex items-center justify-between gap-1 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                  <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-yellow-500 animate-pulse flex-shrink-0"></div>
+                  <p className="text-yellow-900 font-semibold text-[10px] sm:text-xs md:text-sm truncate">⏳ Verification Pending</p>
+                </div>
+                <span className="text-[9px] sm:text-[10px] md:text-xs text-yellow-700 bg-yellow-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0">Under Review</span>
+              </div>
+            </div>
+          )}
+          
           {property.isDraft && (
             <Button
               variant="default"
               size="sm"
-              className="w-full bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm h-8 sm:h-9"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm h-9 sm:h-10 font-medium"
               onClick={() => handleCompleteListingClick(property.id)}
             >
-              <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+              <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
               Complete Listing
             </Button>
+          )}
+          
+          {/* Get Verified Button - Modern Premium UI */}
+          {!property.isDraft && 
+           (property.verificationStatus === 'NOT_VERIFIED' || 
+            property.verificationStatus === 'EXPIRED' ||
+            (property.verificationStatus === 'VERIFIED' && property.verificationExpiry && new Date(property.verificationExpiry) <= new Date())) && 
+           property.verificationStatus !== 'PENDING_VERIFICATION' && (
+            <Link href={`/owner/verify-property/${property.id}`} className="w-full">
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white text-[10px] sm:text-xs md:text-sm h-9 sm:h-10 md:h-11 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] border-2 border-blue-500/20"
+              >
+                <div className="flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2">
+                  <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <span className="truncate">
+                    {property.verificationStatus === 'EXPIRED' ? '🔄 Renew Verification' : '🛡️ Get Verified'}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] md:text-xs font-normal bg-white/20 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">₹199</span>
+                </div>
+              </Button>
+            </Link>
           )}
           
           <div className="flex gap-2">
@@ -295,8 +376,57 @@ const OwnerDashboardPage = () => {
     <div className="min-h-screen bg-gray-50 py-2 sm:py-4 md:py-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:gap-4 md:gap-8 px-2 sm:px-3 md:px-6 lg:px-0">
         {/* Welcome Card */}
-        <Card className="border border-slate-200 bg-white shadow-sm">
+        <Card className="border border-slate-200 bg-white shadow-sm relative">
           <CardHeader className="p-3 sm:p-4 md:p-6 flex flex-col gap-2 sm:gap-3 md:gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Share Icon Button - Top Right */}
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Share Profile"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 rounded-full p-2 hover:bg-blue-100 focus:bg-blue-200 transition z-10"
+              onClick={async () => {
+                try {
+                  const url = `${window.location.origin}/owner/profile/${owner.id}`;
+                  
+                  if (navigator.share) {
+                    await navigator.share({
+                      title: `Owner Profile | roomkarts`,
+                      text: `Check out my owner profile and listed properties on roomkarts!`,
+                      url,
+                    });
+                    toast.success("Profile shared successfully!");
+                  } else {
+                    // Fallback for clipboard - create temp textarea
+                    const textArea = document.createElement("textarea");
+                    textArea.value = url;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    
+                    try {
+                      document.execCommand('copy');
+                      textArea.remove();
+                      toast.success("Profile link copied!", { description: "Share it anywhere." });
+                    } catch (err) {
+                      textArea.remove();
+                      throw err;
+                    }
+                  }
+                } catch (err: any) {
+                  // Ignore if user cancelled the share dialog
+                  if (err.name === 'AbortError' || err.message?.includes('cancel')) {
+                    return;
+                  }
+                  console.error('Share error:', err);
+                  toast.error("Failed to share", { description: "Please try again." });
+                }
+              }}
+            >
+              <Share2 className="h-5 w-5 text-blue-600" />
+            </Button>
             <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
               <Avatar className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16">
                 <AvatarImage src={undefined} alt={owner.firstName + ' ' + owner.lastName} />
@@ -314,6 +444,18 @@ const OwnerDashboardPage = () => {
               </div>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button 
+                onClick={() => {
+                  const contactSection = document.getElementById('contacted-users');
+                  contactSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                variant="outline"
+                className="w-full sm:w-auto text-xs sm:text-sm md:hidden" 
+                size="sm"
+              >
+                <MessageSquare className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                Jump to Contacts
+              </Button>
               <Link href="/list-property">
                 <Button className="w-full sm:w-auto text-xs sm:text-sm" size="sm">
                   <Home className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -520,35 +662,30 @@ const OwnerDashboardPage = () => {
                 <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-slate-500">
                   <MessageSquare className="mx-auto mb-3 h-8 w-8 text-sky-400" />
                   <p className="font-medium text-slate-600">No contacts yet</p>
-                  <p className="mt-2 text-sm">When renters contact you about properties, they'll appear here.</p>
+                  <p className="mt-2 text-sm">When renters contact you about properties, they&apos;ll appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-2 sm:space-y-3 max-h-[400px] sm:max-h-[600px] overflow-y-auto">
                   {leads.slice(0, 10).map(lead => (
-                    <div key={lead.id} className="space-y-2 sm:space-y-3 rounded-xl border border-slate-100 bg-white p-3 sm:p-4 shadow-sm hover:border-slate-200 transition">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1 flex-wrap">
-                            <UserIcon className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400 flex-shrink-0" />
-                            <p className="font-medium text-sm sm:text-base text-slate-900 line-clamp-1">{lead.seekerName}</p>
-                            {/* Listing Type Badge */}
-                            <Badge 
-                              variant="secondary" 
-                              className={`text-[10px] sm:text-xs h-4 sm:h-5 ${
-                                lead.propertyListingType === 'SALE' 
-                                  ? 'bg-purple-100 text-purple-700 border-purple-300' 
-                                  : 'bg-green-100 text-green-700 border-green-300'
-                              }`}
-                            >
-                              {lead.propertyListingType === 'SALE' ? 'Buy/Sell' : 'Rent'}
-                            </Badge>
-                          </div>
-                          <p className="text-xs sm:text-sm text-slate-600 line-clamp-1">
-                            {lead.propertyTitle}
-                          </p>
+                    <div key={lead.id} className="rounded-xl border border-slate-100 bg-white p-3 sm:p-4 shadow-sm hover:border-slate-200 transition">
+                      {/* Row 1: Name + Badge + Status + Delete */}
+                      <div className="flex items-start justify-between gap-2 ">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                          <UserIcon className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400 flex-shrink-0" />
+                          <p className="font-medium text-sm sm:text-base text-slate-900">{lead.seekerName}</p>
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-[10px] sm:text-xs h-4 sm:h-5 ${
+                              lead.propertyListingType === 'SALE' 
+                                ? 'bg-purple-100 text-purple-700 border-purple-300' 
+                                : 'bg-green-100 text-green-700 border-green-300'
+                            }`}
+                          >
+                            {lead.propertyListingType === 'SALE' ? 'Buy/Sell' : 'Rent'}
+                          </Badge>
                         </div>
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          <span className={`rounded-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium flex-shrink-0 ${
+                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                          <span className={`rounded-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium ${
                             lead.status === 'NEW' 
                               ? 'bg-emerald-50 text-emerald-700' 
                               : lead.status === 'CONTACTED' 
@@ -560,7 +697,7 @@ const OwnerDashboardPage = () => {
                           <button
                             onClick={() => handleDeleteContact(lead.id, lead.seekerName)}
                             disabled={deletingContact === lead.id}
-                            className="flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                            className="flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-md bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Delete contact"
                           >
                             {deletingContact === lead.id ? (
@@ -571,23 +708,29 @@ const OwnerDashboardPage = () => {
                           </button>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-0.5 sm:gap-1 text-xs sm:text-sm text-slate-600">
-                        <div className="flex items-center gap-1.5 sm:gap-2">
+                      
+                      {/* Row 2: Property Address/Title */}
+                      <p className="text-xs sm:text-sm text-slate-600 mb-1">
+                        {lead.propertyTitle}
+                      </p>
+                    
+                      
+                      {/* Row 4: Phone + Date */}
+                      <div className="flex items-center justify-between gap-2 text-xs sm:text-sm text-slate-600">
+                        <a 
+                          href={`tel:${lead.seekerPhone}`}
+                          className="flex items-center gap-1.5 sm:gap-2 hover:text-sky-600 transition-colors cursor-pointer"
+                        >
                           <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />
                           <span className="font-medium">{lead.seekerPhone}</span>
-                        </div>
-                        {lead.message && (
-                          <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-2 mt-0.5 sm:mt-1">
-                            {lead.message}
-                          </p>
-                        )}
-                        <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">
+                        </a>
+                        <span className="text-[10px] sm:text-xs text-slate-400">
                           {new Date(lead.createdAt).toLocaleDateString('en-IN', { 
                             day: 'numeric', 
                             month: 'short', 
                             year: 'numeric' 
                           })}
-                        </p>
+                        </span>
                       </div>
                     </div>
                   ))}
