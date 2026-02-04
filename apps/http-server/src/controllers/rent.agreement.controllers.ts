@@ -212,7 +212,7 @@ export const getRentAgreementById = async (req: Request, res: Response) => {
 // Update payment status
 export const updatePaymentStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const { paymentStatus, paymentAmount, paymentId } = req.body;
 
     if (!paymentStatus) {

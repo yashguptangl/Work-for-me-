@@ -703,11 +703,11 @@ export const updatePropertyController = async (req: Request, res: Response): Pro
       const categories = ["first", "second", "third", "fourth", "fifth"];
       const urls: { [key: string]: string } = {};
       for (const category of categories) {
-        const key = `images/${id}/${category}.jpeg`;
+        const key = `images/${propertyId}/${category}.jpeg`;
         urls[category] = await putObject(key, "image/jpeg");
       }
       // Reset 30-day timer
-      await updatePropertyTimestamp(id);
+      await updatePropertyTimestamp(propertyId);
       res.status(200).json({
         success: true,
         message: "Presigned URLs generated. Next update allowed after 30 days.",
@@ -767,7 +767,7 @@ export const deletePropertyController = async (req: Request, res: Response): Pro
 
     // Soft delete - mark as unavailable and draft so it doesn't show in searches
     await prisma.property.update({
-      where: { id },
+      where: { id: propertyId },
       data: {
         isAvailable: false,
         isDraft: true
