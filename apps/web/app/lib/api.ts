@@ -1,5 +1,5 @@
 // API utility functions for connecting frontend to backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -31,7 +31,7 @@ interface Owner {
 }
 
 export interface Property {
-  [x: string]: string;
+  [x: string]: any;
   status: string;
   verificationStatus: string;
   id: string;
@@ -549,7 +549,7 @@ class ApiClient {
 }
 
 // Create and export a singleton instance
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient(API_BASE_URL || "");
 
 // Export types for use in components
 export type { User, Owner , ApiResponse };
