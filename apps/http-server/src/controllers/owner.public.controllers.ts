@@ -5,7 +5,7 @@ import { getObjectURL } from "../utils/s3client";
 // Public: Get owner profile by ID (no auth)
 export const getPublicOwnerProfile = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const owner = await prisma.owner.findUnique({
       where: { id },
       select: {
@@ -28,7 +28,7 @@ export const getPublicOwnerProfile = async (req: Request, res: Response) => {
 // Public: Get all public properties for an owner (no auth)
 export const getPublicOwnerProperties = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const properties = await prisma.property.findMany({
       where: {
         ownerId: id,

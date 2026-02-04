@@ -457,14 +457,15 @@ export const getOwnerPropertiesController = async (req: Request, res: Response):
 export const getPropertyByIdController = async (req: Request, res: Response) => {
   const { id } = req.params;
   const ownerId = req.user?.userId;
+  const propertyId = id as string;
   
   console.log('=== Get Property By ID ===');
-  console.log('Property ID:', id);
+  console.log('Property ID:', propertyId);
   console.log('Owner ID from token:', ownerId);
   
   try {
     const property = await prisma.property.findUnique({
-      where: { id },
+      where: { id: propertyId },
       include: { 
         owner: { 
           select: { 
@@ -548,8 +549,9 @@ export const togglePropertyAvailabilityController = async (req: Request, res: Re
       return;
     }
 
+    const propertyId = id as string;
     const property = await prisma.property.findUnique({
-      where: { id },
+      where: { id: propertyId },
       select: {
         id: true,
         ownerId: true,
@@ -577,7 +579,7 @@ export const togglePropertyAvailabilityController = async (req: Request, res: Re
     // Toggle availability while preserving the original updatedAt timestamp
     // This ensures that visibility changes don't affect the "last edited" date
     const updatedProperty = await prisma.property.update({
-      where: { id },
+      where: { id: propertyId },
       data: {
         isAvailable: !property.isAvailable,
         updatedAt: property.updatedAt  // Preserve original updatedAt
@@ -658,8 +660,9 @@ export const updatePropertyController = async (req: Request, res: Response): Pro
     }
 
     // Verify ownership
+    const propertyId = id as string;
     const property = await prisma.property.findUnique({
-      where: { id }
+      where: { id: propertyId }
     });
 
     if (!property) {
@@ -673,7 +676,7 @@ export const updatePropertyController = async (req: Request, res: Response): Pro
     }
 
     // Check 30-day restriction
-    const updateCheck = await canUpdateProperty(id);
+    const updateCheck = await canUpdateProperty(propertyId);
     if (!updateCheck.allowed) {
       res.status(403).json({
         success: false,
@@ -688,11 +691,11 @@ export const updatePropertyController = async (req: Request, res: Response): Pro
     // Update form data if provided
     if (formData && Object.keys(formData).length > 0) {
       updatedProperty = await prisma.property.update({
-        where: { id },
+        where: { id: propertyId },
         data: formData,
       });
       // Reset 30-day timer
-      await updatePropertyTimestamp(id);
+      await updatePropertyTimestamp(propertyId);
     }
 
     // If client requests presigned URLs for image upload
@@ -747,8 +750,9 @@ export const deletePropertyController = async (req: Request, res: Response): Pro
       return;
     }
 
+    const propertyId = id as string;
     const property = await prisma.property.findUnique({
-      where: { id }
+      where: { id: propertyId }
     });
 
     if (!property) {
@@ -798,8 +802,9 @@ export const publishPropertyController = async (req: Request, res: Response): Pr
       return;
     }
 
+    const propertyId = id as string;
     const property = await prisma.property.findUnique({
-      where: { id }
+      where: { id: propertyId }
     });
 
     if (!property) {
@@ -814,7 +819,7 @@ export const publishPropertyController = async (req: Request, res: Response): Pr
 
     // Update property to published state
     const updated = await prisma.property.update({
-      where: { id },
+      where: { id: propertyId },
       data: { isDraft: false, isAvailable: true }
     });
 

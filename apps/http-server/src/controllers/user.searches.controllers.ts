@@ -121,8 +121,9 @@ export const getPropertyById = async (req: Request, res: Response) => {
     }
     
     try {
+        const propertyIdStr = propertyId as string;
         const property = await prisma.property.findUnique({
-            where: { id: propertyId },
+            where: { id: propertyIdStr },
         });
         
         if (!property) {
@@ -134,7 +135,7 @@ export const getPropertyById = async (req: Request, res: Response) => {
 
         // Get image URLs
         const categories = ["first", "second", "third", "fourth", "fifth"];
-        const imageUrls = await getListingImageUrls(propertyId, categories);
+        const imageUrls = await getListingImageUrls(propertyIdStr, categories);
         const rentValue = property.listingType === 'RENT' ? parseFloat(property.rent || "0") : 0;
         const saleValue = property.listingType === 'SALE' ? parseFloat(property.salePrice || "0") : 0;
 

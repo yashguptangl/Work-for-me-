@@ -166,7 +166,7 @@ export const getUserRentAgreements = async (req: Request, res: Response) => {
 // Get specific rent agreement by ID
 export const getRentAgreementById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const userId = req.user?.userId;
     const userPhone = req.user?.phone;
 
@@ -260,8 +260,9 @@ export const updateDocumentStatus = async (req: Request, res: Response) => {
       });
     }
 
+    const agreementId = id as string;
     const rentAgreement = await prisma.rentAgreement.update({
-      where: { id },
+      where: { id: agreementId },
       data: {
         documentGenerated: true,
         documentUrl,
@@ -286,7 +287,7 @@ export const updateDocumentStatus = async (req: Request, res: Response) => {
 // Delete rent agreement (soft delete by setting status)
 export const deleteRentAgreement = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const userId = req.user?.userId;
     const userPhone = req.user?.phone;
 
@@ -346,8 +347,9 @@ export const downloadRentAgreementPDF = async (req: Request, res: Response) => {
     }
 
     // Find the rent agreement
+    const agreementId = id as string;
     const rentAgreement = await prisma.rentAgreement.findUnique({
-      where: { id },
+      where: { id: agreementId },
     });
 
     if (!rentAgreement) {

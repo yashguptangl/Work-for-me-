@@ -64,7 +64,7 @@ export const userContactController = async (req: Request, res: Response) => {
 
 export const userContactDeleted = async (req: Request, res: Response) => {
      try {
-        const { id } = req.params;
+        const { id } = req.params as { id: string };
 
         const contactLog = await prisma.contact.findUnique({
             where: { id }
@@ -98,7 +98,7 @@ export const userContactDeleted = async (req: Request, res: Response) => {
 
 export const ownerContactDeleted = async (req : Request , res: Response) =>{
      try {
-        const { id } = req.params;
+        const { id } = req.params as { id: string };
 
         const contactLog = await prisma.contact.findUnique({
             where: { id }

@@ -272,9 +272,10 @@ export const getVerificationStatusController = async (req: Request, res: Respons
     }
 
     // Check if property belongs to owner
+    const propertyIdStr = propertyId as string;
     const property = await prisma.property.findFirst({
       where: {
-        id: propertyId,
+        id: propertyIdStr,
         ownerId: ownerId,
       },
       include: {
@@ -301,7 +302,7 @@ export const getVerificationStatusController = async (req: Request, res: Respons
         // Expire the verification and deactivate old verification records
         await prisma.$transaction([
           prisma.property.update({
-            where: { id: propertyId },
+            where: { id: propertyIdStr },
             data: {
               verificationStatus: "EXPIRED",
               isVerified: false,
@@ -309,7 +310,7 @@ export const getVerificationStatusController = async (req: Request, res: Respons
           }),
           prisma.propertyVerification.updateMany({
             where: {
-              propertyId: propertyId,
+              propertyId: propertyIdStr,
               isActive: true,
             },
             data: {
