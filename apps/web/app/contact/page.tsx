@@ -114,7 +114,18 @@ const ContactPage = () => {
             </p>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 pt-2">
-              {/* optional phone block delete kar diya, empty div hata diya */}
+              <div className="flex items-start gap-3">
+                <div className="mt-1 rounded-full bg-primary/10 p-2">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Phone
+                  </p>
+                  <p className="text-sm font-medium">+91 9719507080</p>
+                </div>
+              </div>
+
               <div className="flex items-start gap-3">
                 <div className="mt-1 rounded-full bg-primary/10 p-2">
                   <Mail className="h-4 w-4 text-primary" />
@@ -151,6 +162,20 @@ const ContactPage = () => {
                   </p>
                   <p className="text-sm font-medium">
                     Mon – Sat, 10:00 AM – 7:00 PM IST
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-1 rounded-full bg-primary/10 p-2">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Business Name
+                  </p>
+                  <p className="text-sm font-medium">
+                    RoomKarts
                   </p>
                 </div>
               </div>

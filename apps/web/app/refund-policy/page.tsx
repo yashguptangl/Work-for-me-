@@ -56,9 +56,12 @@ Refund eligibility is determined solely by RoomKarts after internal verification
   {
     number: "6.",
     title: "Payment Gateway Role",
-    content: `• All payments are processed through Razorpay.
-• RoomKarts does not control bank processing timelines.
-• Any delays caused by banks or third-party payment providers are beyond RoomKarts’ control.`,
+    content: `• All payments are processed through authorized payment gateway partners: Razorpay, Cashfree, and PayU.
+• These payment gateways are PCI-DSS compliant and follow RBI guidelines.
+• RoomKarts does not control bank processing timelines or payment gateway refund processing.
+• Any delays caused by banks, payment gateways, or third-party payment providers are beyond RoomKarts' control.
+• Refunds are initiated from RoomKarts' end but the actual credit depends on the payment gateway and your bank's processing time.
+• For payment-specific issues, you may also reach out to the respective payment gateway's support.`,
   },
   {
     number: "7.",
@@ -88,7 +91,19 @@ Changes will be effective immediately upon being posted on the Platform.`,
   {
     number: "10.",
     title: "Contact for Refunds",
-    content: `For refund-related queries, users may contact RoomKarts through the official support channels mentioned on the Platform.`,
+    content: `For refund-related queries, contact us at:
+
+Email: roomkartsbusiness@gmail.com
+Address: Nagal, Saharanpur, Uttar Pradesh, India - 247551
+Support Hours: Monday to Saturday, 10:00 AM – 7:00 PM IST
+
+When requesting a refund, please provide:
+• Transaction ID / Payment ID
+• Registered email address and phone number
+• Date and amount of payment
+• Reason for refund request
+
+Refund requests are reviewed within 3-5 business days, and approved refunds are processed within 7-10 business days.`,
   },
 ];
 
@@ -117,7 +132,7 @@ const RefundPolicyPage = () => (
           </div>
           <div className="text-[11px] sm:text-xs md:text-sm text-muted-foreground">
             Last Updated:{" "}
-            <span className="font-medium text-foreground">02 Feb 2026</span>
+            <span className="font-medium text-foreground">07 Feb 2026</span>
           </div>
         </div>
         <p className="mt-4 text-xs sm:text-sm md:text-base text-muted-foreground max-w-3xl">

@@ -22,19 +22,22 @@ This policy does not apply to third-party websites or services that may be linke
     content: `Personal Information:
 • Full name, mobile number, email address
 • Login credentials, location details
-• Identity or verification details
+• Identity or verification details 
 
 Property Information:
 • Property type, address, images, descriptions
 • Pricing and documents for verification
 
 Payment Information:
-• Payments are processed securely through Razorpay
-• We do not store card, UPI, or bank details
+• Payments are processed securely through authorized payment gateways: Razorpay, Cashfree, and PayU
+• We do not store card, UPI, net banking, or wallet details
+• Payment gateways collect transaction data including payment method, amount, timestamp, and transaction status
+• All payment data is encrypted and handled in compliance with PCI-DSS and RBI guidelines
 
 Technical & Usage Data:
 • IP address, browser/device info, log files
-• Pages visited and cookies/usage patterns`,
+• Pages visited and cookies/usage patterns
+• Transaction history and payment receipts`,
   },
   {
     number: "3.",
@@ -64,12 +67,16 @@ You may disable cookies in your browser settings, but some features of the Platf
     title: "Information Sharing & Disclosure",
     content: `RoomKarts does not sell, rent, or trade your personal information.
 
-We may share information:
-• With trusted service providers (such as Razorpay) to process payments or deliver services
-• To comply with legal obligations, court orders, or government requests
-• In connection with a merger, acquisition, or business transfer, subject to confidentiality
+We may share information with:
+• Payment Gateway Partners: Razorpay, Cashfree, and PayU for secure payment processing. These partners comply with PCI-DSS standards and RBI regulations.
+• Service Providers: Third-party service providers for email delivery, SMS notifications, and customer support.
+• Legal Compliance: Government authorities, law enforcement, or regulatory bodies when required by law, court orders, or to prevent fraud.
+• Business Transfers: In connection with a merger, acquisition, or business transfer, subject to confidentiality agreements.
 
-All third parties are required to maintain reasonable confidentiality and security of your information.`,
+All third-party partners are required to:
+• Maintain reasonable confidentiality and security measures
+• Use information only for specified purposes
+• Comply with applicable data protection laws`,
   },
   {
     number: "6.",
@@ -144,7 +151,14 @@ Any disputes arising under or in connection with this Policy shall be subject to
   {
     number: "14.",
     title: "Contact Us",
-    content: `For privacy-related questions, concerns, or data access requests, you can contact RoomKarts through the official support channels mentioned on our website.`,
+    content: `For privacy-related questions, concerns, or data access requests, contact us at:
+
+Business Name: RoomKarts
+Email: roomkartsbusiness@gmail.com
+Registered Address: Nagal, Saharanpur, Uttar Pradesh, India - 247551
+Support Hours: Monday to Saturday, 10:00 AM – 7:00 PM IST
+
+For data deletion requests, KYC queries, or payment-related privacy concerns, please email us with your registered details and we will respond within 7 business days.`,
   },
 ];
 
@@ -173,7 +187,7 @@ const PrivacyPolicyPage = () => (
           </div>
           <div className="text-[11px] sm:text-xs md:text-sm text-muted-foreground">
             Last Updated:{" "}
-            <span className="font-medium text-foreground">02 Feb 2026</span>
+            <span className="font-medium text-foreground">07 Feb 2026</span>
           </div>
         </div>
         <p className="mt-4 text-xs sm:text-sm md:text-base text-muted-foreground max-w-3xl">

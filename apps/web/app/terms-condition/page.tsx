@@ -50,9 +50,12 @@ const sections = [
   {
     number: "7.",
     title: "Payments & Transactions",
-    content: `• All payments are processed securely through Razorpay.
-• RoomKarts does not store any card, UPI, or banking details.
-• Fees paid for services such as verification or rent agreement generation are service charges, not refundable unless explicitly stated.`,
+    content: `• All payments are processed securely through authorized payment gateway partners including Razorpay, Cashfree, and PayU.
+• RoomKarts does not store any card, UPI, net banking, or wallet details.
+• Payment information is encrypted and processed in compliance with PCI-DSS standards.
+• Fees paid for services such as verification or rent agreement generation are service charges, not refundable unless explicitly stated.
+• Users may be redirected to the payment gateway's secure page to complete transactions.
+• RoomKarts complies with all applicable RBI (Reserve Bank of India) guidelines for payment processing.`,
   },
   {
     number: "8.",
@@ -125,7 +128,13 @@ Violation may result in account suspension or permanent termination.`,
   {
     number: "17.",
     title: "Contact Information",
-    content: `For any queries or support, users can contact us via the official support channels mentioned on the RoomKarts website.`,
+    content: `For any queries or support, users can contact us at:
+
+Email: roomkartsbusiness@gmail.com
+Address: Nagal, Saharanpur, Uttar Pradesh, India - 247551
+Support Hours: Monday to Saturday, 10:00 AM – 7:00 PM IST
+
+For payment-related queries, please contact us with your transaction ID and registered contact details.`,
   },
 ];
 
@@ -155,7 +164,7 @@ const TermsPage = () => {
             </div>
             <div className="text-[11px] sm:text-xs md:text-sm text-muted-foreground">
               Last Updated:{" "}
-              <span className="font-medium text-foreground">02 Feb 2026</span>
+              <span className="font-medium text-foreground">07 Feb 2026</span>
             </div>
           </div>
           <p className="mt-4 text-xs sm:text-sm md:text-base text-muted-foreground max-w-3xl">
