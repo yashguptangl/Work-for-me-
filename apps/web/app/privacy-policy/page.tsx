@@ -7,154 +7,120 @@ import { Badge } from "@/components/ui/badge";
 const sections = [
   {
     number: "1.",
-    title: "Scope of This Privacy Policy",
-    content: `This Privacy Policy applies to:
-• All visitors, users, and registered members of RoomKarts
-• Property owners who list properties on the Platform
-• Users who search properties, contact owners, or use paid services
-• Transactions and payments processed through third-party payment gateways
-
-This policy does not apply to third-party websites or services that may be linked from the Platform.`,
+    title: "Purpose",
+    content: `This policy describes how Roomkarts collects, uses, and protects personal information obtained from users of our website and services.`,
   },
   {
     number: "2.",
     title: "Information We Collect",
-    content: `Personal Information:
-• Full name, mobile number, email address
-• Login credentials, location details
-• Identity or verification details 
-
-Property Information:
-• Property type, address, images, descriptions
-• Pricing and documents for verification
-
-Payment Information:
-• Payments are processed securely through authorized payment gateways: Razorpay, Cashfree, and PayU
-• We do not store card, UPI, net banking, or wallet details
-• Payment gateways collect transaction data including payment method, amount, timestamp, and transaction status
-• All payment data is encrypted and handled in compliance with PCI-DSS and RBI guidelines
-
-Technical & Usage Data:
-• IP address, browser/device info, log files
-• Pages visited and cookies/usage patterns
-• Transaction history and payment receipts`,
+    content: `• Personal identification information (name, email, phone number)
+• Token and tracking technologies
+• Form Information for Future Growth Plan`,
   },
   {
     number: "3.",
-    title: "How We Use Your Information",
-    content: `We use the collected information to:
-• Create and manage your account
-• Enable property listings and search
-• Provide verification and generate rent agreements
-• Process and track payments
-• Improve Platform performance and features
-• Communicate important updates and support messages
-• Detect and prevent fraud or misuse
-• Comply with legal and regulatory requirements`,
+    title: "How We Collect Information",
+    content: `• Forms completed on our website
+• User account registration
+• Website analytics tools
+• Token and similar technologies
+• Images and multimedia content
+• Display content and user interactions`,
   },
   {
     number: "4.",
-    title: "Cookies & Tracking Technologies",
-    content: `RoomKarts uses cookies and similar tracking technologies to:
-• Remember your preferences and login state
-• Improve Platform functionality and performance
-• Analyze usage patterns and user behavior
-
-You may disable cookies in your browser settings, but some features of the Platform may not function properly as a result.`,
+    title: "Use of Information",
+    content: `• Provide and improve our services
+• Communicate with users
+• Personalize user experience
+• Comply with legal obligations`,
   },
   {
     number: "5.",
-    title: "Information Sharing & Disclosure",
-    content: `RoomKarts does not sell, rent, or trade your personal information.
-
-We may share information with:
-• Payment Gateway Partners: Razorpay, Cashfree, and PayU for secure payment processing. These partners comply with PCI-DSS standards and RBI regulations.
-• Service Providers: Third-party service providers for email delivery, SMS notifications, and customer support.
-• Legal Compliance: Government authorities, law enforcement, or regulatory bodies when required by law, court orders, or to prevent fraud.
-• Business Transfers: In connection with a merger, acquisition, or business transfer, subject to confidentiality agreements.
-
-All third-party partners are required to:
-• Maintain reasonable confidentiality and security measures
-• Use information only for specified purposes
-• Comply with applicable data protection laws`,
+    title: "Sharing of Information",
+    content: `We do not sell your personal data. We are not sharing information with third-party service providers under strict confidentiality and with authorities when required by law. Roomkarts uses industry-standard security measures to protect your information. Roomkarts use your personal data to enhance company services and provide a better user experience.`,
   },
   {
     number: "6.",
-    title: "Data Retention",
-    content: `We retain personal information for as long as necessary to:
-• Provide services you have requested
-• Comply with applicable laws and regulations
-• Resolve disputes and enforce our agreements
-
-Users may request account deletion or data removal, subject to legal and operational requirements.`,
+    title: "Data Security",
+    content: `We implement security measures to protect personal data, including encryption, access controls, and regular audits.`,
   },
   {
     number: "7.",
-    title: "Data Security Measures",
-    content: `RoomKarts implements reasonable security measures including:
-• Secure servers and SSL encryption where applicable
-• Restricted access to personal information
-• Periodic monitoring for unauthorized access
-
-However, no method of transmission or storage is 100% secure, and we cannot guarantee absolute security.`,
+    title: "User Rights",
+    content: `• Access, update, or delete their personal data
+• Opt out of communications
+• Withdraw consent at any time`,
   },
   {
     number: "8.",
-    title: "User Responsibilities",
-    content: `As a user, you are responsible for:
-• Keeping your login credentials confidential
-• Providing accurate and updated information
-• Avoiding sharing sensitive personal or financial details in public sections
-
-RoomKarts is not responsible for any loss or misuse of data resulting from your negligence or voluntary disclosure.`,
+    title: "Changes to This Policy",
+    content: `We may update this policy from time to time. Any changes will be posted on this page with an updated revision date.`,
   },
   {
     number: "9.",
-    title: "Third-Party Links",
-    content: `The Platform may contain links to third-party websites or services.
-
-RoomKarts is not responsible for:
-• The privacy practices of third-party websites
-• The content, security, or policies of such external sites
-
-We recommend reviewing the privacy policies of any third-party sites you visit.`,
+    title: "About Roomkarts Privacy Policy",
+    content: `At Roomkarts, which you can check out at roomkarts.com, we really care about your privacy. This Privacy Policy explains what kind of info we collect and how we use it. If you've got any more questions or need more details about our Privacy Policy, feel free to reach out to us. Just a heads up, this policy only covers what happens online and is relevant for visitors to our site regarding the info they share or that we gather on Roomkarts. It doesn't apply to any information collected offline or through other channels.`,
   },
   {
     number: "10.",
-    title: "Children’s Privacy",
-    content: `RoomKarts is intended for users who are 18 years of age or older.
+    title: "Information Collection Details",
+    content: `What info we gather: When we ask you for personal info, we'll make it clear what we need and why. If you reach out to us directly, we might get some extra details like your name, email, phone number, and anything you share in your message or attachments. You can also share other info if you want to.
 
-We do not knowingly collect personal information from minors. If we become aware that information from a minor has been collected, we will take reasonable steps to delete such data.`,
+When you sign up for an account, we might ask for some of your contact details, like your name, Photo, Location, address, email, and phone number.`,
   },
   {
     number: "11.",
-    title: "Limitation of Liability",
-    content: `RoomKarts shall not be liable for:
-• Unauthorized access or breaches beyond our reasonable control
-• Losses, damages, or disputes arising from third-party actions
-• Misuse of information due to user negligence or sharing of credentials`,
+    title: "Log Files",
+    content: `At Roomkarts.in, we have a standard way of using log files. These files keep track of visitors whenever they check out our website. It's something all hosting companies do, and it's a part of their analytics services. The data collected in log files includes stuff like your IP address, browser type, Internet Service Provider (ISP), date and time, pages you came from or left on, and maybe even how many clicks you made. Don't worry this info isn't tied to anything that could personally identify you. We use this information to look at trends, manage the site, monitor how users navigate around, and collect demographic details.`,
   },
   {
     number: "12.",
-    title: "Changes to This Privacy Policy",
-    content: `RoomKarts may update this Privacy Policy from time to time.
-
-Continued use of the Platform after such changes constitutes your acceptance of the updated Policy. We encourage you to review this page periodically.`,
+    title: "Cookies and Web Beacons",
+    content: `Just like any other site out there Roomkarts.in uses cookies. These little pieces of data help keep track of things like what visitors like and which pages they checked out on the site. We use this info to make your experience better by adjusting our webpage content based on what kind of browser you're using and other stuff.`,
   },
   {
     number: "13.",
-    title: "Governing Law",
-    content: `This Privacy Policy is governed by the laws of India.
-
-Any disputes arising under or in connection with this Policy shall be subject to the exclusive jurisdiction of the competent courts in India.`,
+    title: "Third Party Privacy Policies",
+    content: `The privacy policies of third parties do not apply to the privacy policy of Roomkarts.com. So, we recommend checking out the respective privacy policies of these third-party ad servers for more info. They might include guidelines on their practices and ways to opt-out of certain options. You can choose to disable cookies through your personal browser settings. For more detailed info on managing cookies with specific web browsers, you can find it on the websites of the respective browsers.`,
   },
   {
     number: "14.",
+    title: "Payment and Refund Policy - Legal Compliance",
+    content: `We value your privacy and are committed to protecting your personal data in accordance with the Digital Personal Data Protection Act (DPDPA), 2023, and other applicable Indian laws. This Privacy Policy outlines how we collect, use, store, and disclose your personal information, particularly in relation to payments and refunds, when you use our website, mobile application, or services.`,
+  },
+  {
+    number: "15.",
+    title: "Your Rights",
+    content: `• Access, correct, or delete your personal information
+• Object to the processing of your data or withdraw consent (where applicable)
+• Nominate another individual to exercise your rights in case of death or incapacity
+• File complaints with our Grievance Officer or the Data Protection Board of India
+
+To exercise these rights, contact our Data Protection Officer at roomkartsbusiness@gmail.com by mail or Customer care number.`,
+  },
+  {
+    number: "16.",
+    title: "Data Security Measures",
+    content: `We use industry-standard security measures, such as encryption and secure servers, to protect your data. However, no system is completely secure, and you should safeguard your account credentials.`,
+  },
+  {
+    number: "17.",
+    title: "Cookies Management",
+    content: `We use cookies to enhance your browsing experience and track website usage. You can manage cookie preferences via your browser settings.`,
+  },
+  {
+    number: "18.",
+    title: "Policy Updates",
+    content: `We may update this Privacy Policy periodically. Changes will be posted on our website, and significant updates will be communicated via email. Your continued use of our services constitutes acceptance of the updated policy.`,
+  },
+  {
+    number: "19.",
     title: "Contact Us",
     content: `For privacy-related questions, concerns, or data access requests, contact us at:
 
 Business Name: RoomKarts
-Email: roomkartsbusiness@gmail.com
+Email: business@roomkarts.com
 Registered Address: Nagal, Saharanpur, Uttar Pradesh, India - 247551
 Support Hours: Monday to Saturday, 10:00 AM – 7:00 PM IST
 
@@ -187,7 +153,7 @@ const PrivacyPolicyPage = () => (
           </div>
           <div className="text-[11px] sm:text-xs md:text-sm text-muted-foreground">
             Last Updated:{" "}
-            <span className="font-medium text-foreground">07 Feb 2026</span>
+            <span className="font-medium text-foreground">21 Feb 2026</span>
           </div>
         </div>
         <p className="mt-4 text-xs sm:text-sm md:text-base text-muted-foreground max-w-3xl">

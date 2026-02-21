@@ -122,7 +122,7 @@ export default function MobileMenu({ open, onClose, user, onLogout }: Props) {
                 {[
                   { href: '/', label: 'Home', bold: true },
                   { href: '/guides', label: 'Guides' },
-                  { href: '/pricing', label: 'Pricing' },
+                  //{ href: '/pricing', label: 'Pricing' },
                   { href: '/about', label: 'About Us' },
                 ].map((item) => (
                   <motion.div key={item.href} variants={itemVariants} whileHover={{ x: 6 }} whileTap={{ scale: 0.98 }}>

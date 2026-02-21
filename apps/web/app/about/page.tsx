@@ -112,12 +112,12 @@ const About = () => {
 
               <div className="space-y-3">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-                  Making housing simple, safe and transparent.
+                  Property Search Platform + Digital Services
                 </h1>
                 <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl">
-                  RoomKarts is a modern real estate platform that connects
-                  property owners and tenants directly — without confusion,
-                  or hidden charges.
+                  RoomKarts provides FREE property search and digital services
+                  (verification & rent agreements). We DON'T handle property
+                  transactions — only service fees via secure payments.
                 </p>
               </div>
 
@@ -203,12 +203,17 @@ const About = () => {
                 Who we are
               </Badge>
               <h2 className="text-2xl sm:text-3xl font-bold">
-                Built for owners and students.
+                Property Search Platform + Digital Services.
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground max-w-3xl mx-auto md:mx-0">
-                On RoomKarts, property owners can list unlimited Flats, Rooms,
-                PGs, Houses and Villas for rent or sale while students get a
-                clean, filter-based search to find the right place faster.
+                At <strong>Roomkarts</strong>, we believe finding a place shouldn't be complicated or costly. That's
+                why we created a platform where users can search for properties completely <strong>FREE</strong>—no hidden
+                fees, no middlemen. We are a <strong>technology platform</strong> that provides <strong>digital services</strong> like property verification and rent agreement generation.
+              </p>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-3xl mx-auto md:mx-0">
+                <strong>Roomkarts.com</strong> is a property search and digital services platform. Launched in 2026, we provide
+                <strong> FREE property search</strong> and charge only for optional <strong>digital services</strong>: property verification (₹199/month) and
+                rent agreement generation (₹100). We do NOT handle property transactions or rental/sale payments.
               </p>
             </div>
 
@@ -218,11 +223,10 @@ const About = () => {
                 <Card className="h-full">
                   <CardContent className="p-4 sm:p-5 space-y-2">
                     <h3 className="font-semibold text-sm sm:text-base">
-                      Unlimited listings
+                      FREE Property Search
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Owners can add multiple properties with no cap — perfect
-                      for PG owners, agents, or landlords with more inventory.
+                      Users can search unlimited properties for FREE. We don't charge for browsing, contacting owners, or property listings.
                     </p>
                   </CardContent>
                 </Card>
@@ -230,11 +234,10 @@ const About = () => {
                 <Card className="h-full">
                   <CardContent className="p-4 sm:p-5 space-y-2">
                     <h3 className="font-semibold text-sm sm:text-base">
-                      Property verification (₹149)
+                      Digital Service: Property Verification (₹199/month)
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Optional verification badge per listing so students know
-                      which properties are verified and inspected.
+                      Optional verification service for property owners. We verify property documents and provide a trust badge. Service fee only.
                     </p>
                   </CardContent>
                 </Card>
@@ -254,11 +257,10 @@ const About = () => {
                 <Card className="h-full">
                   <CardContent className="p-4 sm:p-5 space-y-2">
                     <h3 className="font-semibold text-sm sm:text-base">
-                      Online rent agreement (₹100)
+                      Digital Service: Rent Agreement (₹100)
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      Generate digital rent agreements for both owner and
-                      tenant in minutes, no offline paperwork required.
+                      Generate digital rent agreements online in minutes. One-time service fee of ₹100 per agreement. No paperwork required.
                     </p>
                   </CardContent>
                 </Card>
@@ -284,11 +286,11 @@ const About = () => {
                       Why choose RoomKarts?
                     </h3>
                     <ul className="list-disc pl-4 space-y-1 text-xs sm:text-sm text-muted-foreground">
-                      <li>Transparent pricing with no hidden charges.</li>
-                      <li>Secure and trusted payment processing.</li>
-                      <li>Direct owner–student interaction, no middleman.</li>
-                      <li>Verified listings for higher trust.</li>
-                      <li>Digital-first, mobile friendly experience.</li>
+                      <li><strong>100% FREE property search</strong> - No listing fees</li>
+                      <li>We DON'T handle rent/sale transactions</li>
+                      <li>Only charge for digital services (verification & agreements)</li>
+                      <li>Direct owner-tenant connection, no commission</li>
+                      <li>Secure payment for services only via Razorpay</li>
                     </ul>
                   </CardContent>
                 </Card>
@@ -298,20 +300,21 @@ const About = () => {
                     <h3 className="font-semibold text-sm sm:text-base mb-1">
                       Company details
                     </h3>
-                    <div>Founded: 2026</div>
-                    <div>Headquarters: India</div>
+                    <div><strong>Founded:</strong> 2026</div>
+                    <div><strong>Business Type:</strong> Digital Services Platform</div>
+                    <div><strong>Services:</strong> Property Search (FREE) + Verification & Agreements (Paid)</div>
+                    <div><strong>Headquarters:</strong> India</div>
                     <div>
-                      Contact:{" "}
+                      <strong>Contact:</strong>{" "}
                       <a
                         href="mailto:roomkartsbusiness@gmail.com"
                         className="text-primary underline"
                       >
-                        roomkartsbusiness@gmail.com
+                        business@roomkarts.com
                       </a>
                     </div>
-                    <div>
-                      For partnership and business queries, reach out to our
-                      team anytime.
+                    <div className="pt-2 border-t mt-2">
+                      <strong>Revenue Model:</strong> Service fees only (verification ₹199/month, agreements ₹100). We do NOT charge for property transactions.
                     </div>
                   </CardContent>
                 </Card>
@@ -321,8 +324,114 @@ const About = () => {
         </div>
       </section>
 
-      {/* VALUES */}
+      {/* HOW IT WORKS - TENANT PROCESS */}
+      <section className="py-12 sm:py-16 md:py-18 bg-background border-t">
+        <div className="container mx-auto px-4 sm:px-6 md:px-8">
+          <div className="max-w-5xl mx-auto space-y-8">
+            <div className="space-y-3 text-center">
+              <Badge variant="secondary" className="trust-badge">
+                How it works
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-bold">
+                How Tenants Can Find Rooms on Roomkarts
+              </h2>
+            </div>
+
+            <Card>
+              <CardContent className="p-6 sm:p-8">
+                <ol className="space-y-4 text-sm sm:text-base text-muted-foreground">
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                      1
+                    </span>
+                    <span>
+                      On the homepage, the seeker chooses (Room, PG, Flat,House , Villa), along with city,
+                      town & sector using 3 dropdowns.
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                      2
+                    </span>
+                    <span>
+                      Clicking the <strong>"Let's Search"</strong> button navigates the seeker to a results page with listings and filters.
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                      3
+                    </span>
+                    <span>
+                      The seeker selects a listing to view detailed information, including images, features, address, offers, and
+                      nearby details.
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                      4
+                    </span>
+                    <span>
+                      To save the listing or view the contact details, the seeker must first log in. After login, the profile
+                      dashboard opens with saved listings in their wishlist.
+                    </span>
+                  </li>
+                </ol>
+                <p className="text-sm sm:text-base text-muted-foreground mt-6 text-center font-medium">
+                  With Roomkarts, finding your ideal property is just a few clicks away—fast, free, and hassle-free.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* OWNER SUBSCRIPTION & POLICIES */}
       <section className="py-12 sm:py-16 md:py-18 bg-muted/30 border-y">
+        <div className="container mx-auto px-4 sm:px-6 md:px-8">
+          <div className="max-w-5xl mx-auto space-y-8">
+            <div className="space-y-3 text-center">
+              <Badge variant="secondary" className="trust-badge">
+                Digital Services Pricing
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-bold">
+                Service Fees - Not Transaction Fees
+              </h2>
+              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                We charge only for digital services (verification & agreements). Property search is FREE. We do NOT handle rental/sale transactions.
+              </p>
+            </div>
+
+            <div className="max-w-2xl mx-auto">
+              <Card>
+                <CardContent className="p-6 sm:p-8 space-y-4">
+                  <h3 className="text-lg sm:text-xl font-semibold">
+                    Digital Service Fee - Property Verification
+                  </h3>
+                  <p className="text-sm sm:text-base text-muted-foreground text-justify">
+                    Roomkarts charges a <strong>monthly service fee of Rs. 199</strong> for property verification service. This is a digital service fee (NOT a transaction fee). We verify property documents, provide a trust badge, and enable continued listing visibility on our platform. This service fee is separate from any rental or property transactions between owners and tenants.
+                  </p>
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+                    <p className="text-xs sm:text-sm text-amber-800">
+                      <strong>Important:</strong> Roomkarts does NOT handle property rental/sale transactions or collect rent/sale amounts. We only charge for digital services (verification & agreements).
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-primary/5">
+              <CardContent className="p-6 sm:p-8">
+                <p className="text-sm sm:text-base text-muted-foreground text-justify">
+                  <strong>How it works:</strong> Property search is FREE for everyone. Owners can list properties for FREE. We charge only for optional digital services: property verification (₹199/month) and rent agreement generation (₹100). All payments are processed securely via Razorpay. We connect people with properties but do NOT participate in rental/sale transactions or payments.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* VALUES */}
+      <section className="py-12 sm:py-16 md:py-18 bg-background border-y">
         <div className="container mx-auto px-4 sm:px-6 md:px-8">
           <div className="max-w-4xl mx-auto text-center space-y-3 mb-8 sm:mb-10">
             <Badge variant="secondary" className="trust-badge">

@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "roomkarts",
-  description: "Verified Rooms. Local Trust.",
+  title: "roomkarts - Property Search & Digital Services Platform",
+  description: "FREE property search platform. Digital services: Property verification (₹199/month) & Rent agreements (₹100). We don't handle property transactions.",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",

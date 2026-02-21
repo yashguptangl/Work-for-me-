@@ -63,7 +63,7 @@ export default function HeroCarousel() {
           Find Perfect Room for You
         </h1>
         <p className="mt-2 sm:mt-3 md:mt-4 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl text-base sm:text-lg md:text-lg lg:text-xl font-medium text-white/90 drop-shadow-lg px-4">
-          List Unlimited Rooms, Flats, Villas, House and PG for Rent - 100% Free for Owners
+          List Unlimited Rooms, Flats, Villas, House and PG - 100% Free for Owners
         </p>
       </div>
     </section>

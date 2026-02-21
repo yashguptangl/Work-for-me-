@@ -10,15 +10,15 @@ const Footer = () => {
     { name: 'Rent Agreement Generator', path: '/rent-agreement' },
     { name: 'Terms & Conditions', path: '/terms-condition' },
     { name: 'Privacy Policy', path: '/privacy-policy' },
-    { name: 'Refund Policy', path: '/refund-policy' },
+    { name: 'Payment Refund Policy', path: '/refund-policy' },
     { name: 'Contact Us', path: '/contact' },
   ];
 
   const socialLinks = [
     { name: 'LinkedIn', icon: Linkedin, url: 'https://x.com' },
-    { name: 'YouTube', icon: Youtube, url: 'https://youtube.com' },
+    { name: 'YouTube', icon: Youtube, url: 'https://www.youtube.com/@roomkarts_india' },
     { name: 'Facebook', icon: Facebook, url: 'https://facebook.com' },
-    { name: 'Instagram', icon: Instagram, url: 'https://instagram.com' },
+    { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/roomkarts_/' },
   ];
 
   return (
@@ -84,7 +84,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/10 mt-10 pt-6 text-center text-white/70 text-sm">
-          © 2025 roomkarts. All rights reserved.
+          © 2026 roomkarts. All rights reserved.
         </div>
       </div>
     </footer>
