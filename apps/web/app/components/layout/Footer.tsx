@@ -84,7 +84,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-white/10 mt-10 pt-6 text-center text-white/70 text-sm">
-          © 2026 roomkarts. All rights reserved.
+          © 2026 Roomkarts. All rights reserved. Owned and operated by Yash Gupta.
         </div>
       </div>
     </footer>
